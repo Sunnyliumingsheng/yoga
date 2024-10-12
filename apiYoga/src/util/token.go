@@ -54,3 +54,14 @@ func ParseToken(Base64token string) (id string, err error) {
 	}
 	return id, nil
 }
+func AsyncGenerateToken(id string, base64TokenChan chan string) {
+	mapClaims := jwt.MapClaims{
+		"id":  id,
+		"exp": time.Now().AddDate(1, 0, 0).UnixMilli(),
+	}
+	// 默认为一年时效
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
+	fmt.Println(config.Config.YogaSoul)
+	Base64token, _ := token.SignedString([]byte(config.Config.YogaSoul))
+	base64TokenChan <- Base64token
+} //一般来说这个函数无论如何也不会出错

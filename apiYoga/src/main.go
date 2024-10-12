@@ -1,17 +1,17 @@
 package main
 
 import (
-	"log"
-	"time"
-
 	"api/config"
 	"api/db"
+	"api/loger"
+	"api/nets"
 	"api/service"
 )
 
 func main() {
-	log.Println(time.Now(), "Start running new pro")
+	loger.StartApiYoga()
 	config.UnmarshalConfig()
 	db.StartClient()
-	service.StartServer()
+	service.StartService()
+	nets.StartApiEngine()
 }

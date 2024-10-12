@@ -1,0 +1,30 @@
+{
+    "yogaSoul":"梵越瑜伽",
+    "redisConfig":{
+        "ipAddress":"172.17.0.3",
+        "port":"6379",
+        "password":"",
+        "db":0
+    },
+    "postgresConfig":{
+        "ipAddress":"localhost",
+        "port":"5432",
+        "username":"yang",
+        "password":"3411",
+        "dbname":"yoga"
+    },
+    "weixin":{
+        "appSecret":"00356e049ff7db105e6b4be85f0c491b",
+        "appId":"wx505161af798bb8a0"
+    },
+    "authentication":{
+        "tokenDurationDay":365,
+        "sessionDurationHour":3
+    },
+    "newUserDefaultInfo":{
+        "nickname":"梵越瑜伽新用户",
+        "gender":false,
+        "signature":"自律即自由",
+        "avaUrl":"https://tse4-mm.cn.bing.net/th/id/OIP-C.oTkPYMD9INW0VGHfu-GdWgHaEo?rs=1&pid=ImgDetMain"
+    }
+}

@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -10,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"api/config"
+	"api/loger"
 )
 
 // 这个文件主要用来连接数据库
@@ -18,13 +18,13 @@ var postdb *gorm.DB
 
 // 用来测试的结构体和函数
 type tests struct {
-	id uint `gorm:"primaryKey;column:test_id"`
+	id int `gorm:"primaryKey;column:test_id"`
 }
 
 func (tests) TableName() string {
 	return "tests"
 }
-func addTest(a uint) {
+func addTest(a int) {
 	postdb.Create(&tests{
 		id: a,
 	})
@@ -48,7 +48,7 @@ func StartClient() {
 	fmt.Println("isActive :", isActive, "level :", level)
 }
 func redisInit() {
-	log.Println(config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port))
+	loger.Loger.Println(config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port))
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port),
 		Password: config.Config.RedisConfig.Password,
@@ -57,7 +57,7 @@ func redisInit() {
 
 	_, err := rdb.Ping().Result()
 	if err != nil {
-		log.Panic("redis client error : ", err.Error())
+		loger.Loger.Panic("redis client error : ", err.Error())
 	}
 }
 func postgresInit() {
@@ -65,7 +65,7 @@ func postgresInit() {
 	var err error
 	postdb, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Panic("!!!!!! error : client to postgres SQL :error :", err)
+		loger.Loger.Panic("!!!!!! error : client to postgres SQL :error :", err)
 	}
 
 }
