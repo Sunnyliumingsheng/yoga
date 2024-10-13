@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 
 	"api/db"
 	"api/loger"
@@ -46,7 +47,34 @@ func RegisterUser(code string) (message nets.Message) {
 	}
 }
 
-// 如果客户端能提供session或者token
+// 如果客户端能提供session和token
 func SessionAndTokenAuthentication(session string, token string) (message nets.Message) {
+	userId, err := strconv.Atoi(session)
+	if err != nil {
+		return nets.Message{IsSuccess: false, Info: "session转换成int64失败", Result: err.Error()}
+	}
+	var isOnlineChan chan bool
+	var levelChan chan int
+	var isValidChan chan bool
+	go db.AsyncAuthSession(session, isOnlineChan, levelChan)
+	go util.AsyncParseToken(token, isValidChan)
+	//一般来说redis的速度远快于token计算
+	level := <-levelChan
+	isOnline := <-isOnlineChan
+	if isOnline {
+		db.AddSession(session, level)
+		return nets.Message{IsSuccess: true, Info: "session和验证通过,时间刷新", Result: nil}
+	}
+	isValid := <-isValidChan
+	if isValid {
+		level, err = db.IntUserIdSelectUserLevel(userId)
+		if err != nil {
+			loger.Loger.Println("!!!!!!!!!!!!严重错误, 在检查用户等级的时候遇到了err", err.Error(), "userId:", userId)
+			return nets.Message{IsSuccess: false, Info: "获取用户等级失败", Result: err.Error()}
+		}
+		db.AddSession(session, level)
+		return nets.Message{IsSuccess: true, Info: "token验证通过", Result: struct{}{}}
+	}
+	return nets.Message{IsSuccess: false, Info: "session和token不匹配", Result: nil}
 
 }

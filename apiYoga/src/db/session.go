@@ -24,7 +24,6 @@ func AddSession(userId string, level int) {
 }
 func AuthSession(userId string) (isActive bool, level int) {
 	result, err := rdb.Get(userId).Result()
-	loger.Loger.Println(result)
 	if err == redis.Nil {
 		loger.Loger.Println("AuthSession : there is no userId", userId, "record")
 		return false, 0
@@ -39,4 +38,22 @@ func AuthSession(userId string) (isActive bool, level int) {
 	}
 
 	return true, level
+}
+
+func AsyncAuthSession(userId string, isActiveChan chan bool, levelChan chan int) {
+	result, err := rdb.Get(userId).Result()
+	if err == redis.Nil {
+		loger.Loger.Println("AuthSession : there is no userId", userId, "record")
+		isActiveChan <- false
+	}
+	if err != nil {
+		loger.Loger.Println("AuthSession : error :", err)
+		isActiveChan <- false
+	}
+	isActiveChan <- true
+	level, err := strconv.Atoi(result)
+	if err != nil {
+		loger.Loger.Println("AuthSession : error: atoi error:userId:", userId, "resule of level:", result)
+	}
+	levelChan <- level
 }

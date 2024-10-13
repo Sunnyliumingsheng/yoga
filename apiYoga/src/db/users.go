@@ -45,3 +45,24 @@ func InsertUserAndGetUserId(openid string) (userId int, err error) {
 	}
 	return user.UserID, nil
 }
+func IntUserIdSelectUserLevel(userId int) (level int, err error) {
+	var user User
+	err = postdb.Model(&User{}).Where("user_id =?", userId).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return -1, gorm.ErrRecordNotFound
+	}
+	if err != nil {
+		return -1, err
+	}
+	level = 4
+	if user.IsStudent {
+		level = 3
+	}
+	if user.IsTeacher {
+		level = 2
+	}
+	if user.IsAdmin {
+		level = 1
+	}
+	return level, nil
+}

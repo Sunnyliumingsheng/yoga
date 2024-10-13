@@ -65,3 +65,41 @@ func AsyncGenerateToken(id string, base64TokenChan chan string) {
 	Base64token, _ := token.SignedString([]byte(config.Config.YogaSoul))
 	base64TokenChan <- Base64token
 } //一般来说这个函数无论如何也不会出错
+func AsyncParseToken(Base64token string, isValidChan chan bool) {
+	token, err := jwt.Parse(Base64token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.Config.YogaSoul), nil
+	})
+	if err != nil {
+		isValidChan <- false
+		return
+	}
+	if !token.Valid {
+		isValidChan <- false
+		return
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	//语法知识，x,ok:=y.(T)为类型断言，y为待转化的值，T为待转化类型，x为转化后的值
+	//这比x:=(T)y好在能够确定是否转化成功
+	if !ok {
+		isValidChan <- false
+		return
+	}
+	_, ok = claims["id"].(string)
+	if !ok {
+		isValidChan <- false
+		return
+	}
+
+	// 检查token是否过期
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		isValidChan <- false
+		return
+	}
+	expTime := time.UnixMilli(int64(exp))
+	if expTime.Before(time.Now()) {
+		isValidChan <- false
+		return
+	}
+	isValidChan <- true
+}
