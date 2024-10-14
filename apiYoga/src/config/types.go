@@ -9,6 +9,7 @@ type ConfigJSON struct {
 	Weixin             Weixin             `json:"weixin"`             //有关微信的一些信息
 	Authentication     Authentication     `json:"authentication"`     //控制验证方式有效时间
 	NewUserDefaultInfo NewUserDefaultInfo `json:"newUserDefaultInfo"` //新注册用户的默认信息
+	Sudo               sudo               `json:"sudo"`               //超级管理员的一些信息
 }
 
 //以下是json中的嵌套结构体
@@ -40,4 +41,8 @@ type NewUserDefaultInfo struct {
 	Gender    bool   `json:"gender"`
 	Signature string `json:"signature"`
 	AvaURL    string `json:"avaUrl"`
+}
+type sudo struct {
+	SuperUsername string `json:"superUsername"`
+	SuperPassword string `json:"superPassword"`
 }

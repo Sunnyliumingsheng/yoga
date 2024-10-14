@@ -30,16 +30,11 @@ func init() {
 	})
 	basicalApiEngine(r)
 	go r.Run(":8080")
-	go addtionalApi()
+	go dynamicApi()
 }
+
+
+
 func StartApiEngine() {
 	loger.Loger.Println(time.Now(), "start api engine server")
-}
-func addtionalApi() {
-	time.Sleep(3 * time.Second)
-	r.GET("/ping2", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
 }

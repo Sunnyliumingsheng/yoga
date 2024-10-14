@@ -26,5 +26,9 @@
         "gender":false,
         "signature":"自律即自由",
         "avaUrl":"https://tse4-mm.cn.bing.net/th/id/OIP-C.oTkPYMD9INW0VGHfu-GdWgHaEo?rs=1&pid=ImgDetMain"
+    },
+    "sudo":{
+        "superUsername":"yang",
+        "superPassword":"passw0rd"
     }
 }
