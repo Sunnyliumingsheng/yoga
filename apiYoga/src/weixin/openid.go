@@ -22,6 +22,7 @@ type Code2SessionResponse struct {
 
 func GetOpenId(jsCode string) (string, error) {
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code", config.Config.Weixin.AppId, config.Config.Weixin.AppSecret, jsCode)
+	loger.Loger.Println(url)
 
 	// 发送 HTTP POST 请求
 	resp, err := http.Get(url)

@@ -2,7 +2,7 @@ package db
 
 type User struct {
 	UserID    int    `gorm:"primaryKey"`
-	OpenID    string `gorm:"not null;size:255"`
+	Openid    string `gorm:"not null;size:255"`
 	Nickname  string `gorm:"not null;size:255"`
 	Name      string `gorm:"size:255"`
 	Gender    bool

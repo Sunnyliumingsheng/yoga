@@ -30,7 +30,7 @@ func IsThisOpenIdExistedAndGetLevel(openid string) (isExist bool, userIdIfExist 
 }
 func InsertUserAndGetUserId(openid string) (userId int, err error) {
 	user := User{
-		OpenID:    openid,
+		Openid:    openid,
 		Nickname:  config.Config.NewUserDefaultInfo.Nickname,
 		Gender:    config.Config.NewUserDefaultInfo.Gender,
 		Signature: config.Config.NewUserDefaultInfo.Signature,
