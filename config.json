@@ -30,5 +30,8 @@
     "sudo":{
         "superUsername":"yang",
         "superPassword":"passw0rd"
+    },
+    "CliInfo":{
+        "name":"fangyue"
     }
 }
