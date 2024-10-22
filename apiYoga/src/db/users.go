@@ -66,3 +66,10 @@ func IntUserIdSelectUserLevel(userId int) (level int, err error) {
 	}
 	return level, nil
 }
+func SelectUserInfoByName(name string) (user User, err error) {
+	err = postdb.Model(&User{}).Where("name = ?", name).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return User{}, gorm.ErrRecordNotFound
+	}
+	return user, nil
+}

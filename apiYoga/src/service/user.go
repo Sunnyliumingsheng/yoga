@@ -79,3 +79,12 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 	return Message{IsSuccess: false, HaveError: false, Info: "session和token不匹配", Result: nil}
 
 }
+
+// 直接检索用户信息
+func SelectUserInfoByName(name string) (message Message) {
+	user, err := db.SelectUserInfoByName(name)
+	if err != nil {
+		return Message{IsSuccess: false, HaveError: true, Info: "查询用户信息失败", Result: nil}
+	}
+	return Message{IsSuccess: true, HaveError: false, Info: "查询用户信息成功", Result: user}
+}

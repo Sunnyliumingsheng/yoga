@@ -16,20 +16,7 @@ func authenticateSudo(s SudoAuthentication) bool {
 	return s.SudoName == config.Config.Sudo.SuperUsername && s.SudoPassword == config.Config.Sudo.SuperPassword
 }
 
-func sudoRegisterAdmin(c *gin.Context) {
-	type registerAdminInfo struct {
-		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
-		UserName           string             `json:"userName"`
-		AdminAccount       string             `json:"adminAccount"`
-		AdminPassword      string             `json:"adminPassword"`
-	}
-	var getData registerAdminInfo
-	if err := c.ShouldBindJSON(&getData); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
 
-}
 
 func sudoLogin(c *gin.Context) {
 	type loginInfo struct {
@@ -45,4 +32,18 @@ func sudoLogin(c *gin.Context) {
 	} else {
 		c.JSON(400, gin.H{"message": "wrong account or password"})
 	}
+}
+func sudoRegisterAdmin(c *gin.Context) {
+	type registerAdminInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		UserName           string             `json:"userName"`
+		AdminAccount       string             `json:"adminAccount"`
+		AdminPassword      string             `json:"adminPassword"`
+	}
+	var getData registerAdminInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 }
