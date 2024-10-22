@@ -1,11 +1,11 @@
 package main
 
 import (
-	"cli/cmd"
 	"cli/config"
+	"cli/handler"
 )
 
 func main() {
 	config.UnmarshalConfig()
-	cmd.Execute()
+	handler.HandleFlags()
 }

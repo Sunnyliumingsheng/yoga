@@ -42,6 +42,7 @@ type NewUserDefaultInfo struct {
 	Signature string `json:"signature"`
 	AvaURL    string `json:"avaUrl"`
 }
+
 // 作为一个小作坊产品,我默认一个人即可维护和开发，所以为了逻辑简单只给了一个开发者接口
 // 如果需要更改，可以将sudo改为sudoers，并想办法将sudo验证函数作修改，我设置了一个sudo验证器，你只需要改那里就好了
 // 另外如果觉得我提供的sudo验证方案太简陋，完全可以自己重写验证器
