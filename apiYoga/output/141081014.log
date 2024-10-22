@@ -1,6 +1,0 @@
-[qSkiptool]2024/10/14 04:03:09 loger.go:23: 2024-10-14 12:03:09.158255862 +0800 CST m=+0.006848289 start ...
-[qSkiptool]2024/10/14 04:03:09 client.go:51: 172.17.0.3:6379
-[qSkiptool]2024/10/14 04:03:10 service.go:10: 2024-10-14 12:03:10.389469575 +0800 CST m=+1.238062001 启动第二层后端逻辑处理服务
-[qSkiptool]2024/10/14 04:03:13 apiEngine.go:36: 2024-10-14 12:03:13.390325922 +0800 CST m=+4.238918478 start api engine server
-[qSkiptool]2024/10/14 04:04:47 session.go:46: AuthSession : there is no userId 123131 record
-[qSkiptool]2024/10/14 04:05:47 openid.go:25: https://api.weixin.qq.com/sns/jscode2session?appid=wx505161af798bb8a0&secret=00356e049ff7db105e6b4be85f0c491b&js_code=0b1DYs000A6m0T1Njr100K2c773DYs0A&grant_type=authorization_code

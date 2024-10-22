@@ -7,3 +7,7 @@
 [GIN-debug] GET    /ping1                    --> api/nets.init.0.func1 (4 handlers)
 [GIN-debug] POST   /api/login                --> api/nets.userLoginWithSessionAndToken (4 handlers)
 [GIN-debug] POST   /api/register             --> api/nets.userLoginWithCode (4 handlers)
+[GIN-debug] POST   /api/root/register/admin  --> api/nets.sudoRegisterAdmin (4 handlers)
+[GIN-debug] POST   /api/root/login           --> api/nets.sudoLogin (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.

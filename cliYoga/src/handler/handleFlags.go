@@ -19,6 +19,8 @@ func HandleFlags() {
 		cmd.ConfigCmd()
 	case "login":
 		cmd.LoginCmd()
+	case "register":
+		cmd.RegisterCmd()
 	case "upgrade_user_level":
 		cmd.UpgradeUserLevel()
 

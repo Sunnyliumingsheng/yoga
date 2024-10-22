@@ -39,3 +39,22 @@ func ReUnmarshalConfig() {
 	fmt.Println("配置信息是:")
 	fmt.Println(string(file))
 }
+func MarshalConfig() {
+	u, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	modifiedJsonData, err := json.MarshalIndent(Config, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	// 将修改后的 JSON 数据写回文件
+	err = os.WriteFile(u.HomeDir+"/.yogaconfig.json", modifiedJsonData, 0644)
+	if err != nil {
+		fmt.Println("Error writing JSON file:", err)
+		return
+	}
+
+}

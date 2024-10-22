@@ -1,0 +1,7 @@
+测试使用
+
+保存个人信息
+go run main.go register --account yang --password passw0rd
+
+验证个人信息是否有效
+go run main.go login 

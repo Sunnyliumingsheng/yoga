@@ -1,8 +1,13 @@
 package cmd
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"time"
+
+	"cli/config"
+	"cli/nets"
 )
 
 // 这里是根目录
@@ -25,5 +30,32 @@ func RootCmd() {
 	time.Sleep(500 * time.Millisecond)
 	fmt.Println("请您确定对每一个操作的危害都清楚了")
 	time.Sleep(500 * time.Millisecond)
+	fmt.Println("使用之前,请先使用register命令保存您的账号和密码,并使用login命令试着验证一下是否有效")
+	time.Sleep(500 * time.Millisecond)
+	fmt.Println("")
+}
+func LoginCmd() {
+
+	login := flag.NewFlagSet("login", flag.ExitOnError)
+
+	login.Parse(os.Args[2:])
+	nets.Login()
+
+}
+func RegisterCmd() {
+
+	register := flag.NewFlagSet("register", flag.ExitOnError)
+	var account string
+	var password string
+
+	register.StringVar(&account, "account", "", "输入您的账号")
+	register.StringVar(&password, "password", "", "输入您的密码")
+
+	register.Parse(os.Args[2:])
+
+	config.Config.MyInfo.Account = account
+	config.Config.MyInfo.Password = password
+
+	config.MarshalConfig()
 
 }
