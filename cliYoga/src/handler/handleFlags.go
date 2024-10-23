@@ -27,8 +27,8 @@ func HandleFlags() {
 		cmd.InsertUserByName()
 	case "drop_user_by_userId":
 		cmd.DropUserByUserId()
-	case "upgrade_user_level":
-		cmd.UpgradeUserLevel()
+	case "update_user_level_by_name":
+		cmd.UpdateUserLevelByName()
 
 	default:
 		fmt.Println("未找到该命令，请检查并重新输入")

@@ -82,7 +82,7 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 
 }
 
-// 直接检索用户信息
+// 直接检索用户信息,注意这个是管理员和超级用户才有权限调用的,正常情况下是不可能让你知道别人的openid等信息的
 func SelectUserInfoByName(name string) (message Message) {
 	user, err := db.SelectUserInfoByName(name)
 	if err == gorm.ErrRecordNotFound {
@@ -111,4 +111,25 @@ func DropUserByStringUserId(userId string) (message Message) {
 		return Message{IsSuccess: false, HaveError: true, Info: "删除时出现错误" + err.Error(), Result: nil}
 	}
 	return Message{IsSuccess: true, HaveError: false, Info: "删除用户成功", Result: nil}
+}
+func UpdateUserLevel(name string, isStudent, isTeacher, isAdmin bool) (message Message) {
+	user, err := db.SelectUserInfoByName(name)
+	if err != nil {
+		return Message{IsSuccess: false, HaveError: true, Info: "没有这个name的用户,请检查用户是否存在" + err.Error(), Result: nil}
+	}
+
+	//这里我本想追求效率,使用并发,可是实际上这段代码并不面向用户,而且对失误的容忍度很低,就用同步逻辑来做
+	//这里都是屎山的一部分,本来想使用并发,但是又改了之后又不想改格式,只能这样凑合着用了.
+	handle := make(chan error, 3)
+	db.HandleUserLevelStudent(handle, &user, isStudent)
+	db.HandleUserLevelTeacher(handle, &user, isTeacher)
+	db.HandleUserLevelAdmin(handle, &user, isAdmin)
+	for i := 0; i < 3; i++ {
+		err = <-handle
+		if err != nil {
+			return Message{IsSuccess: false, HaveError: true, Info: "修改用户等级时遇到错误" + err.Error(), Result: nil}
+		}
+	}
+	return Message{IsSuccess: true, HaveError: false, Info: "修改用户等级成功", Result: nil}
+
 }

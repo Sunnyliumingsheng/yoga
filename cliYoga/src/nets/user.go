@@ -82,12 +82,33 @@ func InsertUserByName(name string) {
 		fmt.Println(string(resqData))
 	}
 }
-func DropUserByUserId(name string) {
+func DropUserByUserId(userId string) {
 	targetUrl := config.Config.CliInfo.Url + "/api/root/drop/user/by/userId"
 	dataMap := make(map[string]interface{})
-	dataMap["userId"] = name
+	dataMap["userId"] = userId
 	dataMap["sudoAuthentication"] = AuthenticationInfo
 
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+}
+func UpdateUserLevel(name string, wantStudent, wantTeacher, wantAdmin bool) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/update/user/level/by/name"
+	dataMap := make(map[string]interface{})
+	dataMap["name"] = name
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+	dataMap["isStudent"] = wantStudent
+	dataMap["isTeacher"] = wantTeacher
+	dataMap["isAdmin"] = wantAdmin
 	payload, _ := json.Marshal(dataMap)
 	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
 	response, err := http.DefaultClient.Do(req)

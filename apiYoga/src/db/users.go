@@ -103,3 +103,139 @@ func DropUserByStringUserId(userId string) (err error) {
 	}
 	return nil
 }
+
+func HandleUserLevelStudent(errChan chan error, user *User, wantIsStudent bool) {
+	if user.IsStudent {
+		if wantIsStudent {
+			//已经是一个学生了,并且想要改为一个学生
+			errChan <- nil
+			return
+		} else {
+			//目前是一个学生,想要取消他的学生身份
+			user.IsStudent = false
+			err := postdb.Model(&User{}).Where("user_id=?", user.UserID).Update("is_student", false).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = dropStudentByUserId(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		}
+	} else {
+		if wantIsStudent {
+			// 目前不是一个学生, 并且想要将他拥有学生身份
+			user.IsStudent = true
+			err := postdb.Save(user).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = insertNewStudent(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		} else {
+			// 目前不是一个学生, 并且不想要将他变为非学生身份
+			errChan <- nil
+			return
+		}
+	}
+}
+func HandleUserLevelTeacher(errChan chan error, user *User, wantIsTeacher bool) {
+	if user.IsTeacher {
+		if wantIsTeacher {
+			// 已经是一个老师了, 并且想要改为一个老师
+			errChan <- nil
+			return
+		} else {
+			// 目前是一个老师, 并且想要将他的老师身份取消
+			user.IsTeacher = false
+			err := postdb.Model(&User{}).Where("user_id=?", user.UserID).Update("is_teacher", false).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = dropTeacherByUserId(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		}
+	} else {
+		if wantIsTeacher {
+			// 目前不是一个老师, 并且想要将他拥有老师身份
+			user.IsTeacher = true
+			err := postdb.Save(user).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = insertNewTeacher(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		} else {
+			// 目前不是一个老师, 并且不想要将他变为非老师身份
+			errChan <- nil
+			return
+		}
+	}
+}
+func HandleUserLevelAdmin(errChan chan error, user *User, wantIsAdmin bool) {
+	if user.IsAdmin {
+		if wantIsAdmin {
+			// 已经是一个管理员了, 并且想要改为一个管理员
+			errChan <- nil
+			return
+		} else {
+			// 目前是一个管理员, 并且想要将他的管理员身份取消
+			user.IsAdmin = false
+			err := postdb.Model(&User{}).Where("user_id=?", user.UserID).Update("is_admin", false).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = dropAdminByUserId(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		}
+	} else {
+		if wantIsAdmin {
+			// 目前不是一个管理员, 并且想要将他拥有管理员身份
+			user.IsAdmin = true
+			err := postdb.Save(user).Error
+			if err != nil {
+				errChan <- err
+				return
+			}
+			err = insertNewAdmin(user.UserID)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			errChan <- nil
+			return
+		} else {
+			// 目前不是一个管理员, 并且不想要将他变为非管理员身份
+			errChan <- nil
+			return
+		}
+	}
+}

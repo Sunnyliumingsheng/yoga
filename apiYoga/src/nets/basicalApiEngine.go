@@ -12,6 +12,6 @@ func basicalApiEngine(r *gin.Engine) {
 	r.POST("/api/root/select/user/by/name", selectUserInfoByName)
 	r.POST("/api/root/insert/user/by/name", insertNewUser)
 	r.POST("/api/root/drop/user/by/userId", dropUserByUserId)
-
+	r.POST("/api/root/update/user/level/by/name", updateUserLevel)
 	// 公共api集合
 }

@@ -12,3 +12,4 @@
 [GIN-debug] POST   /api/root/select/user/by/name --> api/nets.selectUserInfoByName (4 handlers)
 [GIN-debug] POST   /api/root/insert/user/by/name --> api/nets.insertNewUser (4 handlers)
 [GIN-debug] POST   /api/root/drop/user/by/userId --> api/nets.dropUserByUserId (4 handlers)
+[GIN-debug] POST   /api/root/update/user/level/by/name --> api/nets.updateUserLevel (4 handlers)

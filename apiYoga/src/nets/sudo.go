@@ -124,3 +124,27 @@ func dropUserByUserId(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": message.Info})
 }
+func updateUserLevel(c *gin.Context) {
+	type userInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		Name               string             `json:"name"`
+		IsStudent          bool               `json:"isStudent"`
+		IsTeacher          bool               `json:"isTeacher"`
+		IsAdmin            bool               `json:"isAdmin"`
+	}
+	var getData userInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	message := service.UpdateUserLevel(getData.Name, getData.IsStudent, getData.IsTeacher, getData.IsAdmin)
+	if message.HaveError {
+		c.JSON(200, gin.H{"error": message.Info})
+		return
+	}
+	c.JSON(200, gin.H{"message": message.Info})
+}
