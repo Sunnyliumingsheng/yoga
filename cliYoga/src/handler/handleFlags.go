@@ -21,6 +21,12 @@ func HandleFlags() {
 		cmd.LoginCmd()
 	case "register":
 		cmd.RegisterCmd()
+	case "select_user_by_name":
+		cmd.SelectUserByName()
+	case "insert_user_by_name":
+		cmd.InsertUserByName()
+	case "drop_user_by_userId":
+		cmd.DropUserByUserId()
 	case "upgrade_user_level":
 		cmd.UpgradeUserLevel()
 

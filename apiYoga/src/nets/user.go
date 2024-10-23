@@ -69,23 +69,3 @@ func userLoginWithCode(c *gin.Context) {
 		}
 	}
 }
-
-// 通过用户姓名对其信息进行检索
-func selectUserInfoByName(c *gin.Context) {
-	type UserInfo struct {
-		Name string `json:"name"`
-	}
-	var getData UserInfo
-	if err := c.ShouldBindJSON(&getData); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	message := service.SelectUserInfoByName(getData.Name)
-	if message.IsSuccess {
-		c.JSON(200, gin.H{"userInfo": message.Result})
-		return
-	}
-	if message.HaveError {
-
-	}
-}

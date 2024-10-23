@@ -5,3 +5,5 @@ go run main.go register --account yang --password passw0rd
 
 验证个人信息是否有效
 go run main.go login 
+go run main.go insert_user_by_name --name yang
+go run main.go drop_user_by_userId --userId 3

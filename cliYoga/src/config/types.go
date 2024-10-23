@@ -11,6 +11,7 @@ type ConfigJSON struct {
 // 以下是json中的嵌套结构体
 type CliInfo struct {
 	CliName string `json:"cliName"`
+	Url     string `json:"url"`
 }
 type MyInfo struct {
 	Account  string `json:"account"`

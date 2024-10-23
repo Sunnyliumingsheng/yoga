@@ -9,5 +9,6 @@
 [GIN-debug] POST   /api/register             --> api/nets.userLoginWithCode (4 handlers)
 [GIN-debug] POST   /api/root/register/admin  --> api/nets.sudoRegisterAdmin (4 handlers)
 [GIN-debug] POST   /api/root/login           --> api/nets.sudoLogin (4 handlers)
-[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
-Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] POST   /api/root/select/user/by/name --> api/nets.selectUserInfoByName (4 handlers)
+[GIN-debug] POST   /api/root/insert/user/by/name --> api/nets.insertNewUser (4 handlers)
+[GIN-debug] POST   /api/root/drop/user/by/userId --> api/nets.dropUserByUserId (4 handlers)

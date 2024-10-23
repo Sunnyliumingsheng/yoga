@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gorm.io/gorm"
+
 	"api/db"
 	"api/loger"
 	"api/util"
@@ -83,8 +85,30 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 // 直接检索用户信息
 func SelectUserInfoByName(name string) (message Message) {
 	user, err := db.SelectUserInfoByName(name)
+	if err == gorm.ErrRecordNotFound {
+		return Message{IsSuccess: false, HaveError: false, Info: "用户不存在", Result: nil}
+	}
 	if err != nil {
+		loger.Loger.Println("error: 通过name查询个人信息的时候出现了错误")
 		return Message{IsSuccess: false, HaveError: true, Info: "查询用户信息失败", Result: nil}
 	}
 	return Message{IsSuccess: true, HaveError: false, Info: "查询用户信息成功", Result: user}
+}
+func InsertNewUser(name string) (message Message) {
+	haveExist, err := db.InsertNewUser(name)
+	if haveExist {
+		return Message{IsSuccess: false, HaveError: false, Info: "该name已被占用", Result: nil}
+	}
+	if err != nil {
+		loger.Loger.Println("error: 插入用户数据的时候失败 , name: ", name, "error : ", err)
+		return Message{IsSuccess: false, HaveError: true, Info: "插入新用户数据失败", Result: nil}
+	}
+	return Message{IsSuccess: true, HaveError: false, Info: "插入新用户数据成功", Result: nil}
+}
+func DropUserByStringUserId(userId string) (message Message) {
+	err := db.DropUserByStringUserId(userId)
+	if err != nil {
+		return Message{IsSuccess: false, HaveError: true, Info: "删除时出现错误" + err.Error(), Result: nil}
+	}
+	return Message{IsSuccess: true, HaveError: false, Info: "删除用户成功", Result: nil}
 }

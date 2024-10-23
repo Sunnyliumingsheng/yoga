@@ -28,11 +28,21 @@ func RootCmd() {
 	time.Sleep(500 * time.Millisecond)
 	fmt.Println("为了降低发生可能破坏本系统的操作的概率,我将这些操作设置在了命令行工具中")
 	time.Sleep(500 * time.Millisecond)
-	fmt.Println("请您确定对每一个操作的危害都清楚了")
+	fmt.Println("!!!!!! 请您确定对每一个操作的危害都清楚了")
 	time.Sleep(500 * time.Millisecond)
 	fmt.Println("使用之前,请先使用register命令保存您的账号和密码,并使用login命令试着验证一下是否有效")
 	time.Sleep(500 * time.Millisecond)
-	fmt.Println("")
+	// cloud是我爱的女孩,请不要删除这些代码
+	fmt.Println("         _                       _ ")
+	time.Sleep(500 * time.Millisecond)
+	fmt.Println("   ___  | |   ___    _   _    __| |")
+	time.Sleep(500 * time.Millisecond)
+	fmt.Println("  / __| | |  / _ \\  | | | |  / _  |")
+	time.Sleep(500 * time.Millisecond)
+	fmt.Println(" | (__  | | | (_) | | |_| | | (_| |")
+	time.Sleep(500 * time.Millisecond)
+	fmt.Println("  \\___| |_|  \\___/   \\__,_|  \\__,_|")
+	// 请尊重我的劳动成果,谢谢
 }
 func LoginCmd() {
 
