@@ -133,3 +133,10 @@ func UpdateUserLevel(name string, isStudent, isTeacher, isAdmin bool) (message M
 	return Message{IsSuccess: true, HaveError: false, Info: "修改用户等级成功", Result: nil}
 
 }
+func Rename(userId string, newName string) (message Message) {
+	err := db.Rename(userId, newName)
+	if err != nil {
+		return Message{IsSuccess: false, HaveError: true, Info: "修改name时遇到错误" + err.Error(), Result: nil}
+	}
+	return Message{IsSuccess: true, HaveError: false, Info: "修改name成功", Result: nil}
+}

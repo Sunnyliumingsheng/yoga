@@ -50,7 +50,7 @@ func userLoginWithCode(c *gin.Context) {
 	if message.IsSuccess {
 		authenticationInfo, ok := message.Result.(db.Authentication)
 		if ok {
-			c.JSON(200, gin.H{"message": authenticationInfo})
+			c.JSON(200, gin.H{"data": authenticationInfo})
 		} else {
 			c.JSON(400, gin.H{"error": "注册失败,请联系管理员"})
 		}
@@ -68,4 +68,24 @@ func userLoginWithCode(c *gin.Context) {
 			c.JSON(400, gin.H{"message": "出现错误,请联系管理员"})
 		}
 	}
+}
+func userRename(c *gin.Context) {
+	type userInfo struct {
+		NewName        string             `json:"newName"`
+		Authentication AuthenticationInfo `json:"authentication"`
+	}
+	var getData userInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if err := authentication(getData.Authentication, c); err != nil {
+		return
+	}
+	message := service.Rename(getData.Authentication.Session, getData.NewName)
+	if message.HaveError {
+		c.JSON(400, gin.H{"error": "重命名失败"})
+	}
+	c.JSON(200, gin.H{"message": "success"})
+
 }

@@ -239,3 +239,8 @@ func HandleUserLevelAdmin(errChan chan error, user *User, wantIsAdmin bool) {
 		}
 	}
 }
+func Rename(userId string, newName string) (err error) {
+	err = postdb.Model(&User{}).Where("user_id=?", userId).Update("name", newName).Error
+	return err
+
+}
