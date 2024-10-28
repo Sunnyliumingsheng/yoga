@@ -30,5 +30,11 @@
     "sudo":{
         "superUsername":"yang",
         "superPassword":"passw0rd"
+    },
+    "newCourseDefaultInfo":{
+        "courseName":"新课程",
+        "courseSubject":"普通瑜伽",
+        "introductionURL":"https://img.fine400.com/temp/new04.jpg",
+        "introduction":"很棒"
     }
 }
