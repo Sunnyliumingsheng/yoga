@@ -64,6 +64,7 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 	level := <-levelChan
 	isOnline := <-isOnlineChan
 	if isOnline {
+		// 为了防止访问着突然两个都恰好失效,这里需要重新给到token
 		db.AddSession(session, level)
 		return Message{IsSuccess: true, HaveError: false, Info: "session和验证通过,时间刷新", Result: nil}
 	}
@@ -76,7 +77,7 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 			return Message{IsSuccess: false, HaveError: true, Info: "获取用户等级失败", Result: err.Error()}
 		}
 		db.AddSession(session, level)
-		return Message{IsSuccess: true, HaveError: false, Info: "token验证通过", Result: nil}
+		return Message{IsSuccess: true, HaveError: false, Info: "token验证通过", Result: level}
 	}
 	return Message{IsSuccess: false, HaveError: false, Info: "session和token不匹配", Result: nil}
 

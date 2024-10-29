@@ -8,6 +8,7 @@ import (
 	"api/service"
 )
 
+// 第一个访问使用到的函数
 func userLoginWithSessionAndToken(c *gin.Context) {
 	type authenticationInfo struct {
 		Session string `json:"session"`

@@ -7,6 +7,21 @@ import (
 	"api/loger"
 )
 
+// 根据课程名称删除一个课程
+func DeleteCourseByName(courseName string) (err error,notExist bool) {
+	course := &Course{}
+	notExist=checkCourseNameUnique(courseName)
+	if notExist {
+        return nil,notExist
+    }
+	err = postdb.Where("course_name =?", courseName).Delete(course).Error
+	if err != nil {
+		loger.Loger.Println("error: DeleteCourseByName", err, "courseName:", courseName)
+		return err,notExist
+	}
+	return nil,notExist
+}
+
 // 新增一个课程,成功返回nil和true。失败返回error，可能返回.false名称重复
 func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, courseSubject, introduction, introductionURL string, isGroup, isTeam, isVIP bool) (err error, isUnique bool) {
 	course := &Course{
@@ -42,6 +57,8 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 	}
 	return nil, true
 }
+
+// 检查课程是否名称唯一
 func checkCourseNameUnique(courseName string) (isUnique bool) {
 	var count int64
 	err := postdb.Model(&Course{}).Where("course_name=?", courseName).Count(&count).Error
