@@ -17,7 +17,7 @@ func main() {
 	service.StartService()
 	nets.StartApiEngine()
 	update := make(chan struct{})
-
+	//这里用来以后设置热更新功能
 	<-update
 	fmt.Println("Received stop signal")
 }

@@ -29,7 +29,7 @@ func RegisterUser(code string) (message Message) {
 		go util.AsyncGenerateToken(string(userId), tokenChan)
 		go db.AddSession(fmt.Sprint(userId), level)
 		token := <-tokenChan
-		return Message{IsSuccess: false, HaveError: false, Info: "获取token成功", Result: token}
+		return Message{IsSuccess: true, HaveError: false, Info: "获取token成功", Result: db.Authentication{Token: token, Session: fmt.Sprint(userId)}}
 	} else {
 		userId, err = db.InsertUserAndGetUserId(openid)
 		if err != nil {
@@ -140,4 +140,19 @@ func Rename(userId string, newName string) (message Message) {
 		return Message{IsSuccess: false, HaveError: true, Info: "修改name时遇到错误" + err.Error(), Result: nil}
 	}
 	return Message{IsSuccess: true, HaveError: false, Info: "修改name成功", Result: nil}
+}
+
+func (m *Message) SelectUserTail(tail int) {
+	users, err := db.SelectUserTail(tail)
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "查询用户列表时遇到错误" + err.Error()
+		m.Result = nil
+		return
+	}
+	m.IsSuccess = true
+	m.HaveError = false
+	m.Info = "查询用户列表成功"
+	m.Result = users
 }

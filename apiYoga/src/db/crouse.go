@@ -8,18 +8,18 @@ import (
 )
 
 // 根据课程名称删除一个课程
-func DeleteCourseByName(courseName string) (err error,notExist bool) {
+func DeleteCourseByName(courseName string) (err error, notExist bool) {
 	course := &Course{}
-	notExist=checkCourseNameUnique(courseName)
+	notExist = checkCourseNameUnique(courseName)
 	if notExist {
-        return nil,notExist
-    }
+		return nil, notExist
+	}
 	err = postdb.Where("course_name =?", courseName).Delete(course).Error
 	if err != nil {
 		loger.Loger.Println("error: DeleteCourseByName", err, "courseName:", courseName)
-		return err,notExist
+		return err, notExist
 	}
-	return nil,notExist
+	return nil, notExist
 }
 
 // 新增一个课程,成功返回nil和true。失败返回error，可能返回.false名称重复
@@ -66,4 +66,14 @@ func checkCourseNameUnique(courseName string) (isUnique bool) {
 		loger.Loger.Println("error: 出现错误,找到课程名称为 ", courseName, "的课程时出现了错误", err.Error())
 	}
 	return count == 0
+}
+
+// 检索所有课程
+func SelectCourse() (courses []Course, err error) {
+	err = postdb.Find(&courses).Error
+	if err != nil {
+		loger.Loger.Println("error: 出现错误, 查询所有课程时出现了错误", err.Error())
+		return nil, err
+	}
+	return courses, nil
 }

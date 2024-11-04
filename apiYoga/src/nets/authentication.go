@@ -13,7 +13,7 @@ type AuthenticationInfo struct {
 	Token   string `json:"token"`
 }
 
-// 用于日常的身份验证,这是非常常用的函数,每个函数都会用到
+// 用于日常的身份验证,这是非常常用的函数,每个函数都会用到,如果有错误只需要直接return就行了,不需要自己回复前端
 func authentication(info AuthenticationInfo, c *gin.Context) (err error) {
 	message := service.SessionAndTokenAuthentication(info.Session, info.Token)
 	if message.HaveError {

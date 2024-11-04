@@ -148,3 +148,29 @@ func updateUserLevel(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": message.Info})
 }
+func selectUserTail(c *gin.Context) {
+	type TailInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication`
+		Tail               int                `json:"tail"`
+	}
+	var getData TailInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	var m service.Message
+	m.SelectUserTail(getData.Tail)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	if !m.IsSuccess {
+		c.JSON(400, gin.H{"message": m.Info})
+		return
+	}
+	c.JSON(200, gin.H{"message": m.Info})
+}

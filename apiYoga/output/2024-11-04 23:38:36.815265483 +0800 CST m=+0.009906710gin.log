@@ -1,0 +1,16 @@
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /ping1                    --> api/nets.init.0.func1 (3 handlers)
+[GIN-debug] POST   /api/login                --> api/nets.userLoginWithSessionAndToken (3 handlers)
+[GIN-debug] POST   /api/register             --> api/nets.userLoginWithCode (3 handlers)
+[GIN-debug] POST   /api/rename               --> api/nets.userRename (3 handlers)
+[GIN-debug] POST   /api/root/register/admin  --> api/nets.sudoRegisterAdmin (3 handlers)
+[GIN-debug] POST   /api/root/login           --> api/nets.sudoLogin (3 handlers)
+[GIN-debug] POST   /api/root/select/user/by/name --> api/nets.selectUserInfoByName (3 handlers)
+[GIN-debug] POST   /api/root/insert/user/by/name --> api/nets.insertNewUser (3 handlers)
+[GIN-debug] POST   /api/root/drop/user/by/userId --> api/nets.dropUserByUserId (3 handlers)
+[GIN-debug] POST   /api/root/update/user/level/by/name --> api/nets.updateUserLevel (3 handlers)
+[GIN-debug] POST   /api/admin/drop/course/by/name --> api/nets.dropCourseByName (3 handlers)
+[GIN-debug] POST   /api/admin/insert/course  --> api/nets.insertNewCourse (3 handlers)

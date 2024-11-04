@@ -52,21 +52,24 @@ func userLoginWithCode(c *gin.Context) {
 		authenticationInfo, ok := message.Result.(db.Authentication)
 		if ok {
 			c.JSON(200, gin.H{"data": authenticationInfo})
+			return
 		} else {
-			c.JSON(400, gin.H{"error": "注册失败,请联系管理员"})
+			loger.Loger.Println("error:", "将用户信息转化的时候出现错误", message)
+			c.JSON(400, gin.H{"error": "注册失败,请联系管理员 code:1"})
+			return
 		}
 	} else {
 		if message.HaveError {
 			result, ok := message.Result.(string)
 			if ok {
 				loger.Loger.Println("error:", message.Info, result)
-				c.JSON(400, gin.H{"error": result})
+				c.JSON(400, gin.H{"error": result + " code:2"})
 			} else {
 				loger.Loger.Println(message.Info)
-				c.JSON(400, gin.H{"error": "注册出现错误,请联系管理员"})
+				c.JSON(400, gin.H{"error": "注册出现错误,请联系管理员 code :3"})
 			}
 		} else {
-			c.JSON(400, gin.H{"message": "出现错误,请联系管理员"})
+			c.JSON(400, gin.H{"message": "出现错误,请联系管理员 code: 4"})
 		}
 	}
 }
@@ -90,3 +93,4 @@ func userRename(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 
 }
+

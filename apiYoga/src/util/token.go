@@ -17,7 +17,7 @@ func GenerateToken(id string) (Base64token string) {
 	}
 	// 默认为一年时效
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
-	fmt.Println(config.Config.YogaSoul)
+	fmt.Println(config.Config.YogaSoul, "生成新的token// 这里可以以后删除,在token.go中")
 	Base64token, _ = token.SignedString([]byte(config.Config.YogaSoul))
 	return Base64token
 } //一般来说这个函数无论如何也不会出错

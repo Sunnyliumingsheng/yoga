@@ -94,7 +94,6 @@ func InsertNewUser(name string) (ExistName bool, err error) {
 		return false, result.Error
 	}
 	return false, nil
-
 }
 func DropUserByStringUserId(userId string) (err error) {
 	err = postdb.Delete(&User{}, userId).Error
@@ -242,5 +241,13 @@ func HandleUserLevelAdmin(errChan chan error, user *User, wantIsAdmin bool) {
 func Rename(userId string, newName string) (err error) {
 	err = postdb.Model(&User{}).Where("user_id=?", userId).Update("name", newName).Error
 	return err
+}
 
+// 就像linux中的tail一样,选择性的查看几条用户
+func SelectUserTail(tail int) (usersInfo []User, err error) {
+	err = postdb.Model(&User{}).Limit(tail).Find(&usersInfo).Error
+	if err != nil {
+		return nil, err
+	}
+	return usersInfo, nil
 }

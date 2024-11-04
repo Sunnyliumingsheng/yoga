@@ -43,7 +43,6 @@ func StartClient() {
 	addTest(1)
 	getTest()
 	AddSession("123", 2)
-	time.Sleep(time.Second)
 	fmt.Println("start get authentication")
 	isActive, level := AuthSession("123")
 	fmt.Println("isActive :", isActive, "level :", level)

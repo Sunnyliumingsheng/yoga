@@ -14,7 +14,9 @@ func basicalApiEngine(r *gin.Engine) {
 	r.POST("/api/root/insert/user/by/name", insertNewUser)
 	r.POST("/api/root/drop/user/by/userId", dropUserByUserId)
 	r.POST("/api/root/update/user/level/by/name", updateUserLevel)
+	r.POST("/api/root/select/user/tail",selectUserTail)
 	// 管理员使用的    有关课程的
 	r.POST("/api/admin/drop/course/by/name", dropCourseByName)
 	r.POST("/api/admin/insert/course", insertNewCourse)
+
 }
