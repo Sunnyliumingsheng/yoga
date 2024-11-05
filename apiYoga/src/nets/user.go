@@ -93,4 +93,3 @@ func userRename(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 
 }
-
