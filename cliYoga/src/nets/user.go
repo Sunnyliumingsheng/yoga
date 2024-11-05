@@ -122,3 +122,22 @@ func UpdateUserLevel(name string, wantStudent, wantTeacher, wantAdmin bool) {
 		fmt.Println(string(resqData))
 	}
 }
+func SelectUserTail(tail int) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/select/user/tail"
+	dataMap := make(map[string]interface{})
+	dataMap["tail"] = tail
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+}

@@ -7,6 +7,8 @@ import (
 	"api/service"
 )
 
+// 在这里的所有函数,都只需要返回m.result就行了,文本格式就是返回到命令汉的格式,不是json
+
 type SudoAuthentication struct {
 	SudoName     string `json:"account"`
 	SudoPassword string `json:"password"`
@@ -150,7 +152,7 @@ func updateUserLevel(c *gin.Context) {
 }
 func selectUserTail(c *gin.Context) {
 	type TailInfo struct {
-		SudoAuthentication SudoAuthentication `json:"sudoAuthentication`
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
 		Tail               int                `json:"tail"`
 	}
 	var getData TailInfo
@@ -172,5 +174,5 @@ func selectUserTail(c *gin.Context) {
 		c.JSON(400, gin.H{"message": m.Info})
 		return
 	}
-	c.JSON(200, gin.H{"message": m.Info})
+	c.JSON(200, gin.H{"message": m.Result})
 }

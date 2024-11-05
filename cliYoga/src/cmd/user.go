@@ -50,9 +50,9 @@ func UpdateUserLevelByName() {
 	updateByName.BoolVar(&wantAdmin, "admin", false, "管理员权限")
 	updateByName.IntVar(&level, "level", -1, "这是另一种方式,而且是优先考虑这个,新用户为0,赋予学生身份则+1,赋予教师则+2,赋予管理员+4.比如想给某人管理员和学生,则--level 5")
 	updateByName.Parse(os.Args[2:])
-	if name==""{
+	if name == "" {
 		fmt.Println("请一定输入正确的姓名,不能为空")
-		return 
+		return
 	}
 	if level != -1 {
 		//确认了输入了level
@@ -85,5 +85,11 @@ func UpdateUserLevelByName() {
 	// fmt.Println(wantStudent)
 	// fmt.Println(wantTeacher)
 	// fmt.Println(wantAdmin)
-	nets.UpdateUserLevel(name, wantStudent, wantTeacher,wantAdmin)
+	nets.UpdateUserLevel(name, wantStudent, wantTeacher, wantAdmin)
+}
+func SelectUserTail() {
+	selectUser := flag.NewFlagSet("select_users", flag.ExitOnError)
+	var tail int
+	selectUser.IntVar(&tail, "num", 10, "输入你想要检索多少数量的用户")
+	nets.SelectUserTail(tail)
 }

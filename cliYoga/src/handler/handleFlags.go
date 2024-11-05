@@ -29,6 +29,8 @@ func HandleFlags() {
 		cmd.DropUserByUserId()
 	case "update_user_level_by_name":
 		cmd.UpdateUserLevelByName()
+	case "select_users":
+		cmd.SelectUserTail()
 
 	default:
 		fmt.Println("未找到该命令，请检查并重新输入")
