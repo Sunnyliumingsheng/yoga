@@ -1,9 +1,9 @@
 # postgresql的操作文档
 
 ## 进入psql
-docker run -d --name postgreyoga -p 5432:5432 -e      POSTGRES_PASSWORD=3411    postgres
+docker run -d --name postgreYoga -p 5432:5432 -e      POSTGRES_PASSWORD=3411    postgres
 创建完成postgresql之后进入容器
-docker exec -it postgreyoga bash
+docker exec -it postgreYoga bash
 进入了容器需要使用psql
 psql -U postgres
 **这里是一个初始的用户,拥有一切权限**,可以使用\du 查看用户列表和权限列表

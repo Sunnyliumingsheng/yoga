@@ -176,3 +176,133 @@ func selectUserTail(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": m.Result})
 }
+
+// 给者老师设置账号和密码
+func insertTeacherAccountAndPassword(c *gin.Context) {
+	type TeacherInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		Account            string             `json:"account"`
+		Password           string             `json:"password"`
+		TeacherId          string             `json:"teacherId"`
+	}
+	var getData TeacherInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	var m service.Message
+	m.InsertTeacherAccountAndPassword(getData.TeacherId, getData.Account, getData.Password)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	} else {
+		if m.IsSuccess {
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		} else {
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		}
+	}
+}
+
+// 给管理员设置账号和密码
+func insertAdminAccountAndPassword(c *gin.Context) {
+	type AdminInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		Account            string             `json:"account"`
+		Password           string             `json:"password"`
+		AdminId            string             `json:"adminId"`
+	}
+	var getData AdminInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	var m service.Message
+	m.InsertAdminAccountAndPassword(getData.AdminId, getData.Account, getData.Password)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	} else {
+		if m.IsSuccess {
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		} else {
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		}
+	}
+}
+
+// 查询管理员信息
+func selectAdminInfoByName(c *gin.Context) {
+	type AdminInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		Name               string             `json:"name"`
+	}
+	var getData AdminInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	var m service.Message
+	m.SelectAdminInfoByName(getData.Name)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	} else {
+		if m.IsSuccess {
+			c.JSON(200, gin.H{"message": m.Result})
+			return
+		} else {
+			//没有错误但是不成功就是没检索到
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		}
+	}
+}
+
+// 查询教师信息
+func selectTeacherInfo(c *gin.Context) {
+	type TeacherInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+		Name               string             `json:"name"`
+	}
+	var getData TeacherInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if !authenticateSudo(getData.SudoAuthentication) {
+		c.JSON(400, gin.H{"message": "wrong account or password"})
+		return
+	}
+	var m service.Message
+	m.SelectTeacherInfoByName(getData.Name)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	} else {
+		if m.IsSuccess {
+			c.JSON(200, gin.H{"message": m.Result})
+			return
+		} else {
+			//没有错误但是不成功就是没检索到
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		}
+	}
+}

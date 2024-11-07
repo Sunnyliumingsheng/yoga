@@ -3,7 +3,27 @@
 保存个人信息
 go run main.go register --account yang --password passw0rd
 
-验证个人信息是否有效
+//查看当前软件配置
+go run main.go config
+//验证个人信息是否有效
 go run main.go login 
+// 在本地登记账号，之后可以直接使用login
+go run main.go register 
+// 新建一个用户
 go run main.go insert_user_by_name --name yang
+// 删除一个用户，通过id
 go run main.go drop_user_by_userId --userId 3
+// 检索一个用户的信息
+go run main.go select_user_by_name
+//更新一个用户的权限信息
+go run main.go update_user_level_by_name
+// 大量检索用户信息
+go run main.go select_users
+// 给admin或者teacher设置账号和密码
+go run main.go
+// 
+go run main.go
+go run main.go
+go run main.go
+go run main.go
+go run main.go

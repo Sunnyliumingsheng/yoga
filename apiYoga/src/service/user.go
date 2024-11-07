@@ -156,3 +156,158 @@ func (m *Message) SelectUserTail(tail int) {
 	m.Info = "查询用户列表成功"
 	m.Result = users
 }
+func (m *Message) SelectAdminInfoByName(name string) {
+	userInfo, isExist, err := db.SelectAndCheckUserInfoByName(name)
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "查询这个用户信息时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "查询这个用户信息时遇到错误", err.Error())
+		return
+	}
+	if !isExist {
+		m.IsSuccess = false
+		m.HaveError = false
+		m.Info = "该用户不存在"
+		m.Result = nil
+		return
+	}
+	adminInfo, err := db.SelectAdminInfo(userInfo.UserID)
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "查询这个管理员信息时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "查询这个管理员信息时遇到错误", err.Error())
+		return
+	}
+	result := appendAdminInfo(adminInfo, userInfo)
+	m.IsSuccess = true
+	m.Result = result
+	m.HaveError = false
+	m.Info = "查询这个用户和管理员信息成功"
+}
+func (m *Message) SelectTeacherInfoByName(name string) {
+	userInfo, isExist, err := db.SelectAndCheckUserInfoByName(name)
+	if !isExist {
+		m.IsSuccess = false
+		m.HaveError = false
+		m.Info = "该用户不存在"
+		m.Result = nil
+		return
+	}
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "查询这个用户信息时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "查询这个用户信息时遇到错误", err.Error())
+		return
+	}
+	teacherInfo, err := db.SelectTeacherInfo(userInfo.UserID)
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "查询这个教师信息时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "查询这个教师信息时遇到错误", err.Error())
+		return
+	}
+	result := appendTeacherInfo(teacherInfo, userInfo)
+	m.IsSuccess = true
+	m.Result = result
+	m.HaveError = false
+	m.Info = "查询这个用户和教师信息成功"
+}
+func (m *Message) InsertAdminAccountAndPassword(adminId string, account string, password string) {
+	isExist, err := db.InsertAdminAccountAndPassword(adminId, account, password)
+	if isExist {
+		m.IsSuccess = false
+		m.HaveError = false
+		m.Info = "该account已存在"
+		m.Result = nil
+		return
+	}
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "插入admin account and password时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "插入admin account and password时遇到错误", err.Error())
+		return
+	}
+	m.IsSuccess = true
+	m.HaveError = false
+	m.Info = "插入成功"
+}
+func (m *Message) InsertTeacherAccountAndPassword(teacherId, account, password string) {
+	isExist, err := db.InsertTeacherAccountAndPassword(teacherId, account, password)
+	if isExist {
+		m.IsSuccess = false
+		m.HaveError = false
+		m.Info = "该account已存在"
+		m.Result = nil
+		return
+	}
+	if err != nil {
+		m.IsSuccess = false
+		m.HaveError = true
+		m.Info = "插入teacher account and password时遇到错误" + err.Error()
+		m.Result = nil
+		loger.Loger.Println("error: ", "插入teacher account and password时遇到错误", err.Error())
+		return
+	}
+	m.IsSuccess = true
+	m.HaveError = false
+	m.Info = "插入成功"
+}
+func (m *Message) AdminAndTeacherLogin(account, password string, level int) {
+	if level == 1 {
+		isOk, err := db.AdminLogin(account, password)
+		if isOk {
+			m.IsSuccess = true
+			m.HaveError = false
+			m.Info = "管理员登录成功"
+			m.Result = util.GenerrateTokenWithLevelAndAccount(account, level)
+			return
+		} else {
+			if err != nil {
+				m.IsSuccess = false
+				m.HaveError = true
+				m.Info = "管理员登录时遇到错误" + err.Error()
+				loger.Loger.Println("error:", "登录时遇到错误", err, "详细信息如下", account, password, level)
+				return
+			}
+			m.IsSuccess = false
+			m.HaveError = false
+			m.Info = "登录失败，账号不存在或者密码错误"
+			return
+		}
+
+	}
+	if level == 2 {
+		isOk, err := db.TeacherLogin(account, password)
+		if isOk {
+			m.IsSuccess = true
+			m.HaveError = false
+			m.Info = "教师登录成功"
+			m.Result = util.GenerrateTokenWithLevelAndAccount(account, level)
+			return
+		} else {
+			if err != nil {
+				m.IsSuccess = false
+				m.HaveError = true
+				m.Info = "教师登录时遇到错误" + err.Error()
+				loger.Loger.Println("error:", "登录时遇到错误", err, "详细信息如下", account, password, level)
+			}
+			m.IsSuccess = false
+			m.HaveError = false
+			m.Info = "登录失败，账号不存在或者密码错误"
+			return
+		}
+
+	}
+	//前端必须要对level的值进行检查如果是别的值是不能进来的
+	return
+}

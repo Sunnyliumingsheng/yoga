@@ -93,3 +93,35 @@ func userRename(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 
 }
+
+// 管理员和老师在这里登录，因为在gui所以不考虑时间损耗，使用token进行验证
+func adminAndTeacherLogin(c *gin.Context) {
+	type adminInfo struct {
+		Level    int    `json:"level"`
+		Account  string `json:"account"`
+		Password string `json:"password"`
+	}
+	var getData adminInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if getData.Level != 1 && getData.Level != 2 {
+		c.JSON(400, gin.H{"message": "请输入合适的level,警告,不要进行抓包攻击,已经记录你的ip"})
+	}
+	var m service.Message
+	m.AdminAndTeacherLogin(getData.Account, getData.Password, getData.Level)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	} else {
+		if m.IsSuccess {
+			token := m.Result.(string)
+			c.JSON(200, gin.H{"token": token})
+			return
+		} else {
+			c.JSON(200, gin.H{"message": m.Info})
+			return
+		}
+	}
+}

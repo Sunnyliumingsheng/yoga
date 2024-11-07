@@ -251,3 +251,76 @@ func SelectUserTail(tail int) (usersInfo []User, err error) {
 	}
 	return usersInfo, nil
 }
+func SelectAdminInfo(userId int) (adminInfo Admin, err error) {
+	adminInfo.UserID = userId
+	err = postdb.First(&adminInfo).Error
+	return adminInfo, err
+}
+func SelectTeacherInfo(userId int) (teacherInfo Teacher, err error) {
+	teacherInfo.UserID = userId
+	err = postdb.First(&teacherInfo).Error
+	return teacherInfo, err
+}
+func SelectAndCheckUserInfoByName(name string) (user User, isExist bool, err error) {
+	err = postdb.Model(&User{}).Where("name = ?", name).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return User{}, false, nil
+	}
+	if err != nil {
+		return User{}, false, err
+	}
+	return user, true, nil
+}
+func InsertAdminAccountAndPassword(adminId, account, password string) (isExist bool, err error) {
+	//检查是否已经存在这个admin的account
+	var admin Admin
+	admin.Account = account
+	err = postdb.Model(&Admin{}).Where("account=?", account).First(&admin).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
+	}
+	if err == nil {
+		return true, nil
+	}
+
+	err = postdb.Model(&Admin{}).Where("admin_id=?", adminId).Update("account=?", account).Update("password=?", password).Error
+	return false, err
+}
+
+func InsertTeacherAccountAndPassword(teacherId, account, password string) (isExist bool, err error) {
+	var teacher Teacher
+	teacher.Account = account
+	err = postdb.Model(&Teacher{}).Where("account=?", account).First(&teacher).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
+	}
+	if err == nil {
+		return true, nil
+	}
+	err = postdb.Model(&Teacher{}).Where("teacher_id=?", teacherId).Update("account=?", account).Update("password=?", password).Error
+	return false, err
+}
+
+func TeacherLogin(account, password string) (isOk bool, err error) {
+	var teacher Teacher
+	err = postdb.Model(&Teacher{}).Where("account=? && password=?", account, password).First(&teacher).Error
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return true, nil
+	}
+	return false, err
+}
+
+func AdminLogin(account, password string) (isOk bool, err error) {
+	var admin Admin
+	err = postdb.Model(&Admin{}).Where("account=? && password=?", account, password).First(&admin).Error
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return true, nil
+	}
+	return false, err
+}
