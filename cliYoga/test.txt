@@ -19,10 +19,12 @@ go run main.go select_user_by_name
 go run main.go update_user_level_by_name
 // 大量检索用户信息
 go run main.go select_users
-// 给admin或者teacher设置账号和密码
-go run main.go
-// 
-go run main.go
+// 给teacher设置账号和密码
+go run main.go set_teacher_auth --teacher_id 1  --account 1234 --password 3411
+// 查询teacher的信息
+go run main.go select_teacher_by_name --name test
+// 设置admin的账号和密码
+go run main.go set_admin_auth --admin_id 1 --account 1234 --password 3411
 go run main.go
 go run main.go
 go run main.go

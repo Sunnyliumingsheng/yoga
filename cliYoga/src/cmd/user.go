@@ -93,3 +93,56 @@ func SelectUserTail() {
 	selectUser.IntVar(&tail, "num", 10, "输入你想要检索多少数量的用户")
 	nets.SelectUserTail(tail)
 }
+func InsertTeacherAccountAndPassword() {
+	insertTeacherAccount := flag.NewFlagSet("set_teacher_auth", flag.ExitOnError)
+	var account string
+	var password string
+	var teacherId int
+	insertTeacherAccount.IntVar(&teacherId, "teacher_id", -1, "输入老师的id,注意,请务必确定要输入正确的id")
+	insertTeacherAccount.StringVar(&account, "account", "", "输入想要插入的账号")
+	insertTeacherAccount.StringVar(&password, "password", "", "输入想要插入的密码")
+	insertTeacherAccount.Parse(os.Args[2:])
+	if teacherId == -1 || account == "" || password == "" {
+		fmt.Println("错误，请输入所有参数再请求")
+		return
+	}
+	nets.InsertTeacherAccountAndPassword(teacherId, account, password)
+}
+func InsertAdminAccountAndPassword() {
+	insertAdminAccount := flag.NewFlagSet("set_admin_auth", flag.ExitOnError)
+	var account string
+	var adminId int
+	var password string
+	insertAdminAccount.IntVar(&adminId, "admin_id", -1, "输入管理员的id,注意,请务必确定要输入正确的id")
+	insertAdminAccount.StringVar(&account, "account", "", "输入想要插入的账号")
+	insertAdminAccount.StringVar(&password, "password", "", "输入想要插入的密码")
+	insertAdminAccount.Parse(os.Args[2:])
+	if adminId == -1 || password == "" || account == "" {
+		fmt.Println("错误，请输入所有参数再请求")
+		return
+	}
+	nets.InsertAdminAccountAndPassword(adminId, account, password)
+}
+func SelectTeacherInfoByName() {
+	selectTeacher := flag.NewFlagSet("select_teacher_by_name", flag.ExitOnError)
+	var name string
+	selectTeacher.StringVar(&name, "name", "", "输入想要查询的教师的姓名")
+	selectTeacher.Parse(os.Args[2:])
+	if name == "" {
+		fmt.Println("请一定输入正确的姓名,不能为空")
+		return
+	}
+	nets.SelectTeacherInfoByName(name)
+}
+func SelectAdminInfoByName() {
+	selectAdmin := flag.NewFlagSet("select_admin_by_name", flag.ExitOnError)
+	var name string
+	selectAdmin.StringVar(&name, "name", "", "输入想要查询的管理员的姓名")
+	selectAdmin.Parse(os.Args[2:])
+	if name == "" {
+		fmt.Println("请一定输入正确的姓名,不能为空")
+		return
+	}
+	nets.SelectAdminInfoByName(name)
+
+}

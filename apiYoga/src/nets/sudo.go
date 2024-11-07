@@ -183,7 +183,7 @@ func insertTeacherAccountAndPassword(c *gin.Context) {
 		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
 		Account            string             `json:"account"`
 		Password           string             `json:"password"`
-		TeacherId          string             `json:"teacherId"`
+		TeacherId          int                `json:"teacherId"`
 	}
 	var getData TeacherInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {
@@ -216,7 +216,7 @@ func insertAdminAccountAndPassword(c *gin.Context) {
 		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
 		Account            string             `json:"account"`
 		Password           string             `json:"password"`
-		AdminId            string             `json:"adminId"`
+		AdminId            int                `json:"adminId"`
 	}
 	var getData AdminInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {

@@ -31,16 +31,16 @@ func Login() {
 }
 
 type User struct {
-	UserID    int    `gorm:"primaryKey"`
-	Openid    string `gorm:"not null;size:255"`
-	Nickname  string `gorm:"not null;size:255"`
-	Name      string `gorm:"size:255"`
+	UserID    int
+	Openid    string
+	Nickname  string
+	Name      string
 	Gender    bool
-	Signature string `gorm:"size:64"`
+	Signature string
 	IsStudent bool
 	IsTeacher bool
 	IsAdmin   bool
-	AvaURL    string `gorm:"size:255"`
+	AvaURL    string
 }
 
 func SelectUserInfoByName(name string) {
@@ -140,4 +140,86 @@ func SelectUserTail(tail int) {
 	} else {
 		fmt.Println(string(resqData))
 	}
+}
+func InsertTeacherAccountAndPassword(teacherId int, account, password string) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/insert/teacher"
+	dataMap := make(map[string]interface{})
+	dataMap["account"] = account
+	dataMap["password"] = password
+	dataMap["teacherId"] = teacherId
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+}
+func InsertAdminAccountAndPassword(adminId int, account, password string) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/insert/admin"
+	dataMap := make(map[string]interface{})
+	dataMap["account"] = account
+	dataMap["password"] = password
+	dataMap["adminId"] = adminId
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+}
+func SelectTeacherInfoByName(name string) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/select/teacehr/by/name"
+	dataMap := make(map[string]interface{})
+	dataMap["name"] = name
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+}
+
+func SelectAdminInfoByName(name string) {
+	targetUrl := config.Config.CliInfo.Url + "/api/root/select/admin/by/name"
+	dataMap := make(map[string]interface{})
+	dataMap["name"] = name
+	dataMap["sudoAuthentication"] = AuthenticationInfo
+
+	payload, _ := json.Marshal(dataMap)
+	req, _ := http.NewRequest("POST", targetUrl, bytes.NewReader(payload))
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	resqData, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println("Error:", string(resqData))
+	} else {
+		fmt.Println(string(resqData))
+	}
+
 }

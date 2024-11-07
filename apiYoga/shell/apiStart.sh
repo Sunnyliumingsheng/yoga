@@ -8,7 +8,8 @@ echo "                                   "
 
 docker start postgreYoga
 docker start redisYoga
-
+sleep 1
+echo "start"
 cd ~/workspace/yoga/apiYoga
 pwd
 rm ./output/*

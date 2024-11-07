@@ -220,7 +220,7 @@ func (m *Message) SelectTeacherInfoByName(name string) {
 	m.HaveError = false
 	m.Info = "查询这个用户和教师信息成功"
 }
-func (m *Message) InsertAdminAccountAndPassword(adminId string, account string, password string) {
+func (m *Message) InsertAdminAccountAndPassword(adminId int, account string, password string) {
 	isExist, err := db.InsertAdminAccountAndPassword(adminId, account, password)
 	if isExist {
 		m.IsSuccess = false
@@ -241,7 +241,7 @@ func (m *Message) InsertAdminAccountAndPassword(adminId string, account string, 
 	m.HaveError = false
 	m.Info = "插入成功"
 }
-func (m *Message) InsertTeacherAccountAndPassword(teacherId, account, password string) {
+func (m *Message) InsertTeacherAccountAndPassword(teacherId int, account, password string) {
 	isExist, err := db.InsertTeacherAccountAndPassword(teacherId, account, password)
 	if isExist {
 		m.IsSuccess = false

@@ -31,7 +31,14 @@ func HandleFlags() {
 		cmd.UpdateUserLevelByName()
 	case "select_users":
 		cmd.SelectUserTail()
-
+	case "set_teacher_auth":
+		cmd.InsertTeacherAccountAndPassword()
+	case "set_admin_auth":
+		cmd.InsertAdminAccountAndPassword()
+	case "select_teacher_by_name":
+		cmd.SelectTeacherInfoByName()
+	case "select_admin_by_name":
+		cmd.SelectAdminInfoByName()
 	default:
 		fmt.Println("未找到该命令，请检查并重新输入")
 	}

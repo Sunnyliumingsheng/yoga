@@ -1,7 +1,7 @@
 {
     "yogaSoul":"梵越瑜伽",
     "redisConfig":{
-        "ipAddress":"172.17.0.2",
+        "ipAddress":"172.17.0.3",
         "port":"6379",
         "password":"",
         "db":0

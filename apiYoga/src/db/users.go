@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 
@@ -271,7 +272,7 @@ func SelectAndCheckUserInfoByName(name string) (user User, isExist bool, err err
 	}
 	return user, true, nil
 }
-func InsertAdminAccountAndPassword(adminId, account, password string) (isExist bool, err error) {
+func InsertAdminAccountAndPassword(adminId int, account, password string) (isExist bool, err error) {
 	//检查是否已经存在这个admin的account
 	var admin Admin
 	admin.Account = account
@@ -283,22 +284,24 @@ func InsertAdminAccountAndPassword(adminId, account, password string) (isExist b
 		return true, nil
 	}
 
-	err = postdb.Model(&Admin{}).Where("admin_id=?", adminId).Update("account=?", account).Update("password=?", password).Error
+	err = postdb.Model(&Admin{}).Where("admin_id = ?", adminId).Updates(map[string]interface{}{"account": account, "password": password}).Error
 	return false, err
 }
 
-func InsertTeacherAccountAndPassword(teacherId, account, password string) (isExist bool, err error) {
+func InsertTeacherAccountAndPassword(teacherId int, account, password string) (isExist bool, err error) {
 	var teacher Teacher
 	teacher.Account = account
 	err = postdb.Model(&Teacher{}).Where("account=?", account).First(&teacher).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
+		fmt.Println("here is error:")
 		return false, err
 	}
 	if err == nil {
 		return true, nil
 	}
-	err = postdb.Model(&Teacher{}).Where("teacher_id=?", teacherId).Update("account=?", account).Update("password=?", password).Error
+	err = postdb.Model(&Teacher{}).Where("teacher_id = ?", teacherId).Updates(map[string]interface{}{"account": account, "password": password}).Error
 	return false, err
+
 }
 
 func TeacherLogin(account, password string) (isOk bool, err error) {
