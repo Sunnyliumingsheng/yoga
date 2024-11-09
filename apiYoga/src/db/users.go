@@ -240,8 +240,19 @@ func HandleUserLevelAdmin(errChan chan error, user *User, wantIsAdmin bool) {
 	}
 }
 func Rename(userId string, newName string) (err error) {
-	err = postdb.Model(&User{}).Where("user_id=?", userId).Update("name", newName).Error
-	return err
+	var user User
+	err = postdb.Model(&User{}).Where("name=?", newName).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		err = postdb.Model(&User{}).Where("user_id=?", userId).Update("name", newName).Error
+		return err
+	} else {
+		if err == nil {
+			return errors.New("存在重名,请重新命名,推荐使用真名+数字再尝试")
+		} else {
+			return errors.New("意料之外的错误,请联系管理员" + err.Error())
+		}
+	}
+
 }
 
 // 就像linux中的tail一样,选择性的查看几条用户
@@ -306,24 +317,69 @@ func InsertTeacherAccountAndPassword(teacherId int, account, password string) (i
 
 func TeacherLogin(account, password string) (isOk bool, err error) {
 	var teacher Teacher
-	err = postdb.Model(&Teacher{}).Where("account=? && password=?", account, password).First(&teacher).Error
+	err = postdb.Model(&Teacher{}).Where("account=? AND password=?", account, password).First(&teacher).Error
 	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}
 	if err != nil {
-		return true, nil
+		return false, nil
 	}
-	return false, err
+	return true, err
 }
 
 func AdminLogin(account, password string) (isOk bool, err error) {
 	var admin Admin
-	err = postdb.Model(&Admin{}).Where("account=? && password=?", account, password).First(&admin).Error
+	fmt.Println("get is:", account, password)
+	err = postdb.Model(&Admin{}).Where("account=? AND password=?", account, password).First(&admin).Error
+	fmt.Println("error:", err, "data:", admin)
 	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}
 	if err != nil {
-		return true, nil
+		return false, nil
 	}
-	return false, err
+	return true, err
+}
+func SelectAdminIdByAdminAccount(account string) (adminId int, err error) {
+	var admin Admin
+	err = postdb.Model(&Admin{}).Where("account=?", account).First(&admin).Error
+	if err == gorm.ErrRecordNotFound {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return admin.AdminID, err
+}
+func SelectAdminInfoByAccount(account string) (adminInfo Admin, err error) {
+	err = postdb.Model(&adminInfo).Where("account=?", account).First(&adminInfo).Error
+	return adminInfo, err
+}
+func SelectUserInfoByUserId(userId int) (userInfo User, err error) {
+	err = postdb.Model(&userInfo).Where("user_id=?", userId).First(&userInfo).Error
+	return userInfo, err
+}
+func SelectTeacherInfoByAccount(account string) (teacherInfo Teacher, err error) {
+	err = postdb.Model(&teacherInfo).Where("account=?", account).First(&teacherInfo).Error
+	return teacherInfo, err
+}
+
+// 警惕 ，来自gpt，非手写
+func UpdateUserInfo(userId, nickname, signature string, gender bool) (err error) {
+	updateData := map[string]interface{}{
+		"nickname":  nickname,
+		"signature": signature,
+		"gender":    gender,
+	}
+
+	// 使用 gorm 的 Updates 方法进行更新
+	err = postdb.Model(&User{}).Where("user_id = ?", userId).Updates(updateData).Error
+	return
+}
+func UpdateTeacherInfo(userId, introduction string) (err error) {
+	updateData := map[string]interface{}{
+		"introduction": introduction,
+	}
+	postdb.Model(&Teacher{}).Where("user_id =?", userId).Updates(updateData)
+	return err
 }

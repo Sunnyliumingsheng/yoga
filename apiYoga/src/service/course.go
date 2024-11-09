@@ -4,7 +4,15 @@ import "api/db"
 
 // 尝试service的另一种写法
 // 新增一个课程
-func (m *Message) InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, courseSubject, introduction, introductionURL string, isGroup, isTeam, isVIP bool) {
+func (m *Message) InsertNewCourse(account string, recommendMaxNum, recommendMinNum int, courseName, courseSubject, introduction, introductionURL string, isGroup, isTeam, isVIP bool) {
+	adminId, err := db.SelectAdminIdByAdminAccount(account)
+	if err != nil {
+		// 账号不存在
+		m.IsSuccess = false
+		m.Info = "账号不存在"
+		m.HaveError = true
+		return
+	}
 	err, isUnique := db.InsertNewCourse(adminId, recommendMaxNum, recommendMinNum, courseName, courseSubject, introduction, introductionURL, isGroup, isTeam, isVIP)
 	if !isUnique {
 		// 名字重复

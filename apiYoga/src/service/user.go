@@ -49,7 +49,7 @@ func RegisterUser(code string) (message Message) {
 	}
 }
 
-// 如果客户端能提供session和token,成功就什么都不干,失败就需要客户端重新调用另一个api
+// 如果客户端能提供session和token,成功就刷新session,失败就需要客户端重新调用另一个api
 func SessionAndTokenAuthentication(session string, token string) (message Message) {
 	userId, err := strconv.Atoi(session)
 	if err != nil {
@@ -64,7 +64,7 @@ func SessionAndTokenAuthentication(session string, token string) (message Messag
 	level := <-levelChan
 	isOnline := <-isOnlineChan
 	if isOnline {
-		// 为了防止访问着突然两个都恰好失效,这里需要重新给到token
+		// 为了防止访问着突然两个都恰好失效,这里需要重新给到session
 		db.AddSession(session, level)
 		return Message{IsSuccess: true, HaveError: false, Info: "session和验证通过,时间刷新", Result: nil}
 	}
@@ -137,7 +137,7 @@ func UpdateUserLevel(name string, isStudent, isTeacher, isAdmin bool) (message M
 func Rename(userId string, newName string) (message Message) {
 	err := db.Rename(userId, newName)
 	if err != nil {
-		return Message{IsSuccess: false, HaveError: true, Info: "修改name时遇到错误" + err.Error(), Result: nil}
+		return Message{IsSuccess: false, HaveError: true, Info: err.Error(), Result: nil}
 	}
 	return Message{IsSuccess: true, HaveError: false, Info: "修改name成功", Result: nil}
 }
@@ -266,6 +266,7 @@ func (m *Message) AdminAndTeacherLogin(account, password string, level int) {
 	if level == 1 {
 		isOk, err := db.AdminLogin(account, password)
 		if isOk {
+			fmt.Println("登录成功")
 			m.IsSuccess = true
 			m.HaveError = false
 			m.Info = "管理员登录成功"
@@ -279,6 +280,7 @@ func (m *Message) AdminAndTeacherLogin(account, password string, level int) {
 				loger.Loger.Println("error:", "登录时遇到错误", err, "详细信息如下", account, password, level)
 				return
 			}
+			fmt.Println("登录失败了")
 			m.IsSuccess = false
 			m.HaveError = false
 			m.Info = "登录失败，账号不存在或者密码错误"
@@ -310,4 +312,72 @@ func (m *Message) AdminAndTeacherLogin(account, password string, level int) {
 	}
 	//前端必须要对level的值进行检查如果是别的值是不能进来的
 	return
+}
+func (m *Message) SelectAdminOrTeacherInfoByAccount(account string, isAdmin bool) {
+	if isAdmin {
+		adminInfo, err := db.SelectAdminInfoByAccount(account)
+		if err != nil {
+			m.HaveError = true
+			m.IsSuccess = false
+			m.Info = "检索管理员失败" + err.Error()
+			return
+		}
+		userInfo, err := db.SelectUserInfoByUserId(adminInfo.UserID)
+		if err != nil {
+			m.HaveError = true
+			m.IsSuccess = false
+			m.Info = "检索用户失败" + err.Error()
+		}
+		info := appendAdminInfo(adminInfo, userInfo)
+		info.Password = ""
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "检索成功"
+		m.Result = info
+	} else {
+		teacherInfo, err := db.SelectTeacherInfoByAccount(account)
+		if err != nil {
+			m.HaveError = true
+			m.IsSuccess = false
+			m.Info = "检索教师信息失败" + err.Error()
+			return
+		}
+		userInfo, err := db.SelectUserInfoByUserId(teacherInfo.UserID)
+		if err != nil {
+			m.HaveError = true
+			m.IsSuccess = false
+			m.Info = "检索用户失败" + err.Error()
+		}
+		info := appendTeacherInfo(teacherInfo, userInfo)
+		info.Password = ""
+		// 密码？ 还是不告诉好了吧
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "检索成功"
+		m.Result = info
+	}
+}
+func (m *Message) UpdateUserInfo(userId string, nickname, signature string, gender bool) {
+	err := db.UpdateUserInfo(userId, nickname, signature, gender)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+	} else {
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "更新成功"
+	}
+}
+func (m *Message) UpdateTeacherInfo(userId string, introduction string) {
+	err := db.UpdateTeacherInfo(userId, introduction)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+	} else {
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "更新成功"
+	}
 }

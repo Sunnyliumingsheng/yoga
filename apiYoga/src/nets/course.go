@@ -1,8 +1,6 @@
 package nets
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 
 	"api/db"
@@ -10,37 +8,36 @@ import (
 	"api/service"
 )
 
+// electron 中管理员使用
 func insertNewCourse(c *gin.Context) {
 	type CourseInfo struct {
-		RecommendMaxNum    int
-		RecommendMinNum    int
-		CourseName         string
-		CourseSubject      string
-		Introduction       string
-		IntroductionURL    string
-		IisGroup           bool
-		IsTeam             bool
-		IsVIP              bool
-		AuthenticationInfo AuthenticationInfo
+		RecommendMaxNum int    `json:"recommendMaxNum"`
+		RecommendMinNum int    `json:"recommendMinNum"`
+		CourseName      string `json:"courseName"`
+		CourseSubject   string `json:"courseSubject"`
+		Introduction    string `json:"introduction"`
+		IntroductionURL string `json:"introductionURL"`
+		IsGroup         bool   `json:"isIsGroup"`
+		IsTeam          bool   `json:"isTeam"`
+		IsVIP           bool   `json:"isVIP"`
+		Token           string `json:"token"`
 	}
 	var getData CourseInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	ok := authenticationAdmin(getData.AuthenticationInfo, c)
+	ok, htTeacher, account := authenticationInElectron(getData.Token, c)
 	if !ok {
-		c.JSON(400, gin.H{"message": "验证失败"})
+		return
+	}
+	if htTeacher == false {
+		c.JSON(400, gin.H{"message": "只有管理员才能创建课程"})
 		return
 	}
 	var m service.Message
-	userId, err := strconv.Atoi(getData.AuthenticationInfo.Session)
-	if err != nil {
-		loger.Loger.Println("error:", err, "session:", getData.AuthenticationInfo.Session)
-		c.JSON(400, gin.H{"error": "错误,请联系开发者"})
-		return
-	}
-	m.InsertNewCourse(userId, getData.RecommendMaxNum, getData.RecommendMinNum, getData.CourseName, getData.CourseSubject, getData.Introduction, getData.IntroductionURL, getData.IisGroup, getData.IsTeam, getData.IsVIP)
+
+	m.InsertNewCourse(account, getData.RecommendMaxNum, getData.RecommendMinNum, getData.CourseName, getData.CourseSubject, getData.Introduction, getData.IntroductionURL, getData.IsGroup, getData.IsTeam, getData.IsVIP)
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
 		return
@@ -53,19 +50,23 @@ func insertNewCourse(c *gin.Context) {
 }
 func dropCourseByName(c *gin.Context) {
 	type CourseInfo struct {
-		AuthenticationInfo AuthenticationInfo
-		CourseName         string
+		Token      string `json:"token"`
+		CourseName string `json:"course_name"`
 	}
 	var getData CourseInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	ok := authenticationAdmin(getData.AuthenticationInfo, c)
-	if !ok {
-		c.JSON(400, gin.H{"message": "验证失败权限不够"})
+	isOk, htTeacher, account := authenticationInElectron(getData.Token, c)
+	if !isOk {
 		return
 	}
+	if htTeacher == false {
+		c.JSON(400, gin.H{"message": "只有管理员才能删除课程"})
+		return
+	}
+
 	var m service.Message
 	m.DropCourseByName(getData.CourseName)
 	if m.HaveError {
@@ -76,13 +77,14 @@ func dropCourseByName(c *gin.Context) {
 		c.JSON(400, gin.H{"message": m.Info})
 		return
 	}
+	loger.Loger.Println("! dangerous ->", account, "<- 这个account的admin用户删除了一个课程:", getData.CourseName)
 	c.JSON(200, gin.H{"message": m.Info})
 }
 
 // 检索课程列表,文本的传输并不需要什么资源消耗,完全可以作为一个大杂烩,想要任何课程内容都可以全部检索
-func SelectCourse(c *gin.Context) {
+func selectCourse(c *gin.Context) {
 	type CourseInfo struct {
-		AuthenticationInfo AuthenticationInfo
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
 	}
 	var getData CourseInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {
@@ -100,8 +102,35 @@ func SelectCourse(c *gin.Context) {
 		return
 	}
 	var courses []db.Course
-	courses,ok:=m.Result.([]db.Course)
-	if ok{
+	courses, ok := m.Result.([]db.Course)
+	if ok {
+		c.JSON(200, gin.H{"courses": courses})
+	}
+}
+
+// 事实上和上面这个函数的作用相同，内容也基本一致，但是显然两种验证方式的平台都有这个需求
+func selectCourseByElectron(c *gin.Context) {
+	type CourseInfo struct {
+		Token string `json:"token"`
+	}
+	var getData CourseInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	isOk, _, _ := authenticationInElectron(getData.Token, c)
+	if !isOk {
+		return
+	}
+	var m service.Message
+	m.SelectCourse()
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	var courses []db.Course
+	courses, ok := m.Result.([]db.Course)
+	if ok {
 		c.JSON(200, gin.H{"courses": courses})
 	}
 }
