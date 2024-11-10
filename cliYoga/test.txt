@@ -14,7 +14,7 @@ go run main.go insert_user_by_name --name yang
 // 删除一个用户，通过id
 go run main.go drop_user_by_userId --userId 3
 // 检索一个用户的信息
-go run main.go select_user_by_name
+go run main.go select_user_by_name --name test
 //更新一个用户的权限信息
 go run main.go update_user_level_by_name
 // 大量检索用户信息
