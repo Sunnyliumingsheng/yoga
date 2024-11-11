@@ -315,6 +315,7 @@ func (m *Message) AdminAndTeacherLogin(account, password string, level int) {
 }
 func (m *Message) SelectAdminOrTeacherInfoByAccount(account string, isAdmin bool) {
 	if isAdmin {
+		fmt.Println(account, isAdmin)
 		adminInfo, err := db.SelectAdminInfoByAccount(account)
 		if err != nil {
 			m.HaveError = true

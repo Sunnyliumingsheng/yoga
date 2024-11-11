@@ -1,8 +1,6 @@
 package nets
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 
 	"api/db"
@@ -110,7 +108,6 @@ func adminAndTeacherLogin(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println(getData, "getData !!!")
 	if getData.Level != 1 && getData.Level != 2 {
 		c.JSON(400, gin.H{"message": "请输入合适的level,警告,不要进行抓包攻击,已经记录你的ip"})
 	}
@@ -122,7 +119,6 @@ func adminAndTeacherLogin(c *gin.Context) {
 	} else {
 		if m.IsSuccess {
 			token := m.Result.(string)
-			fmt.Println(token)
 			c.JSON(200, gin.H{"token": token})
 			return
 		} else {
