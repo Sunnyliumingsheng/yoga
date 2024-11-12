@@ -35,7 +35,6 @@ func entrance() {
 			"message": "pong",
 		})
 	})
-
 	// 注册其他路由
 	basicalApiEngine(r)
 	go dynamicApi() // 启动动态 API

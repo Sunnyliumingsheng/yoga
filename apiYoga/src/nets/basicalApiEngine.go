@@ -3,6 +3,9 @@ package nets
 import "github.com/gin-gonic/gin"
 
 func basicalApiEngine(r *gin.Engine) {
+	// 照片相关的
+	r.POST("/api/upload/picture", uploadPicture)
+	r.POST("/api/delete/picture", deletePicture)
 	// 用户端使用的有关用户的
 	r.POST("/api/login", userLoginWithSessionAndToken)
 	r.POST("/api/register", userLoginWithCode)
