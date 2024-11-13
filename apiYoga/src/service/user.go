@@ -2,85 +2,107 @@ package service
 
 import (
 	"fmt"
-	"strconv"
 
 	"gorm.io/gorm"
 
 	"api/db"
 	"api/loger"
+	"api/session"
 	"api/util"
 	"api/weixin"
 )
 
 // 如果没有收到token或者session的时候调用,可能注册新用户,如果成功则返回一个db.Authentication,失败只会返回错误信息
-func RegisterUser(code string) (message Message) {
+func (m Message) RegisterUser(code string) {
 	openid, err := weixin.GetOpenId(code)
 	if err != nil {
-		return Message{IsSuccess: false, HaveError: true, Info: "获取openid失败", Result: err.Error()}
+		m.HaveError = true
+		m.Info = "获取OpenId失败"
 	}
 	isExist, userId, level, err := db.IsThisOpenIdExistedAndGetLevel(openid)
 	if err != nil {
 		loger.Loger.Println("!!!!!!!!!!!!严重错误, 在检查用户是否存在的时候遇到了除了openid不存在以外的错误", err.Error(), "openid:", openid)
-		return Message{IsSuccess: false, HaveError: true, Info: "获取用户信息失败", Result: err.Error()}
+		m.HaveError = true
+		m.Info = "检查用户是否存在时遇到了除了openid不存在以外的错误"
 	}
 	if isExist {
 		// 给出新的token和session给到用户
 		tokenChan := make(chan string)
 		go util.AsyncGenerateToken(string(userId), tokenChan)
-		go db.AddSession(fmt.Sprint(userId), level)
+		sessionId := session.InsertSession(userId, level)
 		token := <-tokenChan
-		return Message{IsSuccess: true, HaveError: false, Info: "获取token成功", Result: db.Authentication{Token: token, Session: fmt.Sprint(userId)}}
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Result = AuthenticationInfo{
+			Token:     token,
+			SessionId: sessionId,
+		}
 	} else {
+		// 不存在意味着需要注册
 		userId, err = db.InsertUserAndGetUserId(openid)
 		if err != nil {
 			loger.Loger.Println("!!!!!!!!!!!!严重错误, 检查了是否存在但仍然插入新用户失败", err.Error(), "openid:", openid)
-			return Message{IsSuccess: false, HaveError: true, Info: "插入用户信息失败", Result: err.Error()}
+			m.HaveError = true
+			m.Info = "插入用户信息失败"
 		}
 		tokenChan := make(chan string)
 		go util.AsyncGenerateToken(string(userId), tokenChan)
-		go db.AddSession(fmt.Sprint(userId), level)
+		sessionId := session.InsertSession(userId, 4)
 		token := <-tokenChan
-		return Message{
-			IsSuccess: true,
-			HaveError: false,
-			Info:      "新用户注册成功",
-			Result:    db.Authentication{Token: token, Session: fmt.Sprint(userId)},
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Result = AuthenticationInfo{
+			Token:     token,
+			SessionId: sessionId,
 		}
 	}
 }
 
 // 如果客户端能提供session和token,成功就刷新session,失败就需要客户端重新调用另一个api
-func SessionAndTokenAuthentication(session string, token string) (message Message) {
-	userId, err := strconv.Atoi(session)
-	if err != nil {
-		return Message{IsSuccess: false, HaveError: true, Info: "session转换成int64失败", Result: err.Error()}
-	}
-	var isOnlineChan chan bool = make(chan bool)
-	var levelChan chan int = make(chan int)
+func (m Message) SessionAndTokenAuthentication(sessionId string, token string) {
 	var isValidChan chan bool = make(chan bool)
-	go db.AsyncAuthSession(session, isOnlineChan, levelChan)
-	go util.AsyncParseToken(token, isValidChan)
-	//一般来说redis的速度远快于token计算
-	level := <-levelChan
-	isOnline := <-isOnlineChan
-	if isOnline {
-		// 为了防止访问着突然两个都恰好失效,这里需要重新给到session
-		db.AddSession(session, level)
-		return Message{IsSuccess: true, HaveError: false, Info: "session和验证通过,时间刷新", Result: nil}
+	var userIdChan chan int = make(chan int)
+	isOk, userId, level := session.CheckSession(sessionId)
+	go util.AsyncParseToken(token, isValidChan, userIdChan)
+	if isOk {
+		//如果session验证成功
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "session验证通过"
+		m.Result = SessionInfo{
+			SessionId: sessionId,
+			UserId:    userId,
+			Level:     level,
+		}
+		return
 	}
 	isValid := <-isValidChan
-
+	userId = <-userIdChan
 	if isValid {
-		level, err = db.IntUserIdSelectUserLevel(userId)
+		// 如果是有效的
+		level, err := db.IntUserIdSelectUserLevel(userId)
 		if err != nil {
-			loger.Loger.Println("!!!!!!!!!!!!严重错误, 在检查用户等级的时候遇到了err", err.Error(), "userId:", userId)
-			return Message{IsSuccess: false, HaveError: true, Info: "获取用户等级失败", Result: err.Error()}
+			loger.Loger.Println("!!!严重错误, 在检查用户等级的时候遇到了err", err.Error(), "userId:", userId)
+			m.HaveError = true
+			m.IsSuccess = false
+			m.Info = "查询等级失败"
+			return
 		}
-		db.AddSession(session, level)
-		return Message{IsSuccess: true, HaveError: false, Info: "token验证通过", Result: level}
+		sessionId = session.InsertSession(userId, level)
+		m.HaveError = false
+		m.IsSuccess = true
+		m.Info = "token验证成功,刷新session"
+		m.Result = SessionInfo{
+			SessionId: sessionId,
+			UserId:    userId,
+			Level:     level,
+		}
+		return
 	}
-	return Message{IsSuccess: false, HaveError: false, Info: "session和token不匹配", Result: nil}
-
+	// 如果是无效的token，就去准备用openid登录
+	m.HaveError = false
+	m.IsSuccess = false
+	m.Info = "token和session都过期,请尝试别的登录方法"
 }
 
 // 直接检索用户信息,注意这个是管理员和超级用户才有权限调用的,正常情况下是不可能让你知道别人的openid等信息的
@@ -381,4 +403,17 @@ func (m *Message) UpdateTeacherInfo(userId string, introduction string) {
 		m.IsSuccess = true
 		m.Info = "更新成功"
 	}
+}
+func (m *Message) SelectUserInfoByUserId(userId int) {
+	userInfo, err := db.SelectUserInfoByUserId(userId)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	userInfo.Openid = ""
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Result = userInfo
 }

@@ -106,7 +106,7 @@ func selectCourse(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	err := authentication(getData.AuthenticationInfo, c)
+	_, err := authentication(getData.AuthenticationInfo, c)
 	if err != nil {
 		return
 	}

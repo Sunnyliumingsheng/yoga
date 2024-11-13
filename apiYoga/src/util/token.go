@@ -65,7 +65,7 @@ func AsyncGenerateToken(id string, base64TokenChan chan string) {
 	Base64token, _ := token.SignedString([]byte(config.Config.YogaSoul))
 	base64TokenChan <- Base64token
 } //一般来说这个函数无论如何也不会出错
-func AsyncParseToken(Base64token string, isValidChan chan bool) {
+func AsyncParseToken(Base64token string, isValidChan chan bool, userIdChan chan int) {
 	token, err := jwt.Parse(Base64token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.Config.YogaSoul), nil
 	})
@@ -84,7 +84,7 @@ func AsyncParseToken(Base64token string, isValidChan chan bool) {
 		isValidChan <- false
 		return
 	}
-	_, ok = claims["id"].(string)
+	id, ok := claims["id"].(int)
 	if !ok {
 		isValidChan <- false
 		return
@@ -101,6 +101,7 @@ func AsyncParseToken(Base64token string, isValidChan chan bool) {
 		isValidChan <- false
 		return
 	}
+	userIdChan <- id
 	isValidChan <- true
 }
 func GenerrateTokenWithLevelAndAccount(account string, level int) (Base64token string) {

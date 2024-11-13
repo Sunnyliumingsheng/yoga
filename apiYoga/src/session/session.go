@@ -1,6 +1,7 @@
 package session
 
 import (
+	"api/config"
 	"crypto/rand"
 	"encoding/hex"
 	"sync"
@@ -24,7 +25,7 @@ var m sessionManager
 func init() {
 	m.sessions = make(map[string]sessionInfo)
 	m.mu = sync.Mutex{}
-	m.expiry = 2 * time.Second
+	m.expiry = time.Duration(config.Config.Authentication.SessionDurationHour)
 	go cleanExpiredSessionInfo(m.expiry)
 }
 

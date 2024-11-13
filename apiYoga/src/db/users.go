@@ -9,11 +9,12 @@ import (
 	"api/config"
 )
 
-// 检查用户表中是否已经存在这个openid的用户
+// 检查用户表中是否已经存在这个openid的用户，不存在或者失败都会返回-1的userid和level
 func IsThisOpenIdExistedAndGetLevel(openid string) (isExist bool, userIdIfExist int, level int, err error) {
 	var user User
 	err = postdb.Model(&User{}).Where("openid = ?", openid).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
+		//不存在这个用户记录，返回的都是-1
 		return false, -1, -1, nil
 	}
 	if err != nil {

@@ -17,35 +17,11 @@ import (
 var rdb *redis.Client
 var postdb *gorm.DB
 
-// 用来测试的结构体和函数
-type tests struct {
-	id int `gorm:"primaryKey;column:test_id"`
-}
-
-func (tests) TableName() string {
-	return "tests"
-}
-func addTest(a int) {
-	postdb.Create(&tests{
-		id: a,
-	})
-}
-func getTest() {
-	var a []tests
-	postdb.Select(&a)
-	fmt.Println(a)
-}
-
 func StartClient() {
 	fmt.Println("!!!!!!!!!!")
-	redisInit()
+	//redisInit()
 	postgresInit()
-	addTest(1)
-	getTest()
-	AddSession("123", 2)
-	fmt.Println("start get authentication")
-	isActive, level := AuthSession("123")
-	fmt.Println("isActive :", isActive, "level :", level)
+
 }
 func redisInit() {
 	loger.Loger.Println(config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port))

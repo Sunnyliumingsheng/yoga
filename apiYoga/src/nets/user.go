@@ -1,6 +1,8 @@
 package nets
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"api/db"
@@ -8,7 +10,7 @@ import (
 	"api/service"
 )
 
-// 第一个访问使用到的函数
+// 第一个访问使用到的函数,token是不会更新的，所以返回的只有sessionId
 func userLoginWithSessionAndToken(c *gin.Context) {
 	type authenticationInfo struct {
 		Session string `json:"session"`
@@ -19,24 +21,22 @@ func userLoginWithSessionAndToken(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-
-	message := service.SessionAndTokenAuthentication(getData.Session, getData.Token)
-	if message.IsSuccess {
-		c.JSON(200, gin.H{"message": "success"})
-	} else {
-		if message.HaveError {
-			result, ok := message.Result.(string)
-			if ok {
-				loger.Loger.Println("error:", message.Info, result)
-				c.JSON(400, gin.H{"error": result})
-			} else {
-				loger.Loger.Println(message.Info)
-				c.JSON(400, gin.H{"error": "出现错误,请联系管理员"})
-			}
-		} else {
-			c.JSON(400, gin.H{"message": "session and token are expired both"})
-		}
+	sessionInfo, err := authentication(AuthenticationInfo{
+		Session: getData.Session,
+		Token:   getData.Token,
+	}, c)
+	if err != nil {
+		return
 	}
+	var m service.Message
+	m.SelectUserInfoByUserId(sessionInfo.UserId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	// 这个函数不存在没有错误还不成功的情况
+	userInfo := m.Result.(db.User)
+	c.JSON(200, gin.H{"session_id": sessionInfo.SessionId, "user_info": userInfo})
 }
 func userLoginWithCode(c *gin.Context) {
 	type codeStruct struct {
@@ -47,29 +47,23 @@ func userLoginWithCode(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	message := service.RegisterUser(getData.Code)
-	if message.IsSuccess {
-		authenticationInfo, ok := message.Result.(db.Authentication)
+	var m service.Message
+	m.RegisterUser(getData.Code)
+	if m.IsSuccess {
+		authenticationInfo, ok := m.Result.(db.Authentication)
 		if ok {
-			c.JSON(200, gin.H{"data": authenticationInfo})
+			c.JSON(200, gin.H{"authentication": authenticationInfo})
 			return
 		} else {
-			loger.Loger.Println("error:", "将用户信息转化的时候出现错误", message)
+			loger.Loger.Println("error:", "将用户信息转化的时候出现错误")
 			c.JSON(400, gin.H{"error": "注册失败,请联系管理员 code:1"})
 			return
 		}
 	} else {
-		if message.HaveError {
-			result, ok := message.Result.(string)
-			if ok {
-				loger.Loger.Println("error:", message.Info, result)
-				c.JSON(400, gin.H{"error": result + " code:2"})
-			} else {
-				loger.Loger.Println(message.Info)
-				c.JSON(400, gin.H{"error": "注册出现错误,请联系管理员 code :3"})
-			}
-		} else {
-			c.JSON(400, gin.H{"message": "出现错误,请联系管理员 code: 4"})
+		if m.HaveError {
+			loger.Loger.Println("error:", m.Info)
+			c.JSON(400, gin.H{"error": m.Info})
+			return
 		}
 	}
 }
@@ -85,10 +79,11 @@ func userRename(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	if err := authentication(getData.Authentication, c); err != nil {
+	sessionInfo, err := authentication(getData.Authentication, c)
+	if err != nil {
 		return
 	}
-	message := service.Rename(getData.Authentication.Session, getData.NewName)
+	message := service.Rename(fmt.Sprint(sessionInfo.UserId), getData.NewName)
 	if message.HaveError {
 		c.JSON(400, gin.H{"error": message.Info})
 	}
@@ -168,11 +163,12 @@ func updateUserInfo(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	if err := authentication(getData.AuthenticationInfo, c); err != nil {
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
 		return
 	}
 	var m service.Message
-	m.UpdateUserInfo(getData.AuthenticationInfo.Session, getData.Nickname, getData.Signature, getData.Gender)
+	m.UpdateUserInfo(fmt.Sprint(sessionInfo.UserId), getData.Nickname, getData.Signature, getData.Gender)
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
 	}
@@ -190,12 +186,12 @@ func updateTeacherInfo(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	err := authentication(getData.AuthenticationInfo, c)
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
 	if err != nil {
 		return
 	}
 	var m service.Message
-	m.UpdateTeacherInfo(getData.AuthenticationInfo.Session, getData.Introduction)
+	m.UpdateTeacherInfo(fmt.Sprint(sessionInfo.UserId), getData.Introduction)
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
 	}

@@ -35,3 +35,12 @@ type TeacherInfo struct {
 	Introduction    string
 	IntroductionURL string
 }
+type SessionInfo struct {
+	SessionId string `json:"session_id"`
+	UserId    int    `json:"user_id"`
+	Level     int    `json:"level"`
+}
+type AuthenticationInfo struct {
+	SessionId string `json:"session_id"`
+	Token     string `json:"token"`
+}
