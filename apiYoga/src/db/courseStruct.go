@@ -11,7 +11,7 @@ type Course struct {
 	Introduction    string
 	IsGroupType     bool
 	IsTeamType      bool
-	IsVipType       bool ``
+	IsVipType       bool
 	RecommendMaxNum int
 	RecommendMinNum int
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
