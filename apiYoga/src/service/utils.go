@@ -9,6 +9,7 @@ func appendAdminInfo(admin db.Admin, user db.User) (info AdminInfo) {
 	info.AvaURL = user.AvaURL
 	info.IsStudent = user.IsStudent
 	info.IsTeacher = user.IsTeacher
+	info.IsAdmin = true
 	info.Nickname = user.Nickname
 	info.Openid = user.Openid
 	info.Password = admin.Password
@@ -24,6 +25,7 @@ func appendTeacherInfo(teacher db.Teacher, user db.User) (info TeacherInfo) {
 	info.Gender = user.Gender
 	info.Signature = user.Signature
 	info.IsStudent = user.IsStudent
+	info.IsTeacher = true
 	info.IsAdmin = user.IsAdmin
 	info.AvaURL = user.AvaURL
 	info.TeacherID = teacher.TeacherID

@@ -32,7 +32,7 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 		Introduction:    config.Config.NewCourseDefaultInfo.IntroductionURL,
 		IsGroupType:     true,
 		IsTeamType:      false,
-		IsVIPType:       false,
+		IsVipType:       false,
 		RecommendMaxNum: recommendMaxNum,
 		RecommendMinNum: recommendMinNum,
 	}
@@ -46,11 +46,11 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 	course.IntroductionURL = introductionURL
 	course.IsGroupType = isGroup
 	course.IsTeamType = isTeam
-	course.IsVIPType = isVIP
+	course.IsVipType = isVIP
 	course.RecommendMaxNum = recommendMaxNum
 	course.RecommendMinNum = recommendMinNum
 
-	err = postdb.Create(course).Error
+	err = postdb.Model(&Course{}).Create(course).Error
 	if err != nil {
 		loger.Loger.Println("error: 出现错误, 创建课程时出现了错误", err.Error())
 		return err, false

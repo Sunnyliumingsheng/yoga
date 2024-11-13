@@ -9,6 +9,7 @@ type AdminInfo struct {
 	Gender    bool
 	Signature string
 	IsStudent bool
+	IsAdmin   bool
 	IsTeacher bool
 	AvaURL    string
 	AdminID   int
@@ -24,6 +25,7 @@ type TeacherInfo struct {
 	Gender          bool
 	Signature       string
 	IsStudent       bool
+	IsTeacher       bool
 	IsAdmin         bool
 	AvaURL          string
 	TeacherID       int

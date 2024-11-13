@@ -1,6 +1,8 @@
 package nets
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	"api/db"
@@ -11,8 +13,8 @@ import (
 // electron 中管理员使用
 func insertNewCourse(c *gin.Context) {
 	type CourseInfo struct {
-		RecommendMaxNum int    `json:"recommendMaxNum"`
-		RecommendMinNum int    `json:"recommendMinNum"`
+		RecommendMaxNum string `json:"recommendMaxNum"`
+		RecommendMinNum string `json:"recommendMinNum"`
 		CourseName      string `json:"courseName"`
 		CourseSubject   string `json:"courseSubject"`
 		Introduction    string `json:"introduction"`
@@ -36,8 +38,21 @@ func insertNewCourse(c *gin.Context) {
 		return
 	}
 	var m service.Message
-
-	m.InsertNewCourse(account, getData.RecommendMaxNum, getData.RecommendMinNum, getData.CourseName, getData.CourseSubject, getData.Introduction, getData.IntroductionURL, getData.IsGroup, getData.IsTeam, getData.IsVIP)
+	var recommendMaxNum int
+	var recommendMinNum int
+	recommendMaxNum, err := strconv.Atoi(getData.RecommendMaxNum)
+	if err != nil {
+		loger.Loger.Println("recommendMaxNum convert to int error: ", err)
+		c.JSON(400, gin.H{"error": "recommendMaxNum 转换为 int 出错"})
+		return
+	}
+	recommendMinNum, err = strconv.Atoi(getData.RecommendMinNum)
+	if err != nil {
+		loger.Loger.Println("recommendMinNum convert to int error: ", err)
+		c.JSON(400, gin.H{"error": "recommendMinNum 转换为 int 出错"})
+		return
+	}
+	m.InsertNewCourse(account, recommendMaxNum, recommendMinNum, getData.CourseName, getData.CourseSubject, getData.Introduction, getData.IntroductionURL, getData.IsGroup, getData.IsTeam, getData.IsVIP)
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
 		return
