@@ -18,12 +18,14 @@ func (m Message) RegisterUser(code string) {
 	if err != nil {
 		m.HaveError = true
 		m.Info = "获取OpenId失败"
+		return
 	}
 	isExist, userId, level, err := db.IsThisOpenIdExistedAndGetLevel(openid)
 	if err != nil {
 		loger.Loger.Println("!!!!!!!!!!!!严重错误, 在检查用户是否存在的时候遇到了除了openid不存在以外的错误", err.Error(), "openid:", openid)
 		m.HaveError = true
 		m.Info = "检查用户是否存在时遇到了除了openid不存在以外的错误"
+		return
 	}
 	if isExist {
 		// 给出新的token和session给到用户
@@ -37,6 +39,7 @@ func (m Message) RegisterUser(code string) {
 			Token:     token,
 			SessionId: sessionId,
 		}
+		return
 	} else {
 		// 不存在意味着需要注册
 		userId, err = db.InsertUserAndGetUserId(openid)
@@ -44,6 +47,7 @@ func (m Message) RegisterUser(code string) {
 			loger.Loger.Println("!!!!!!!!!!!!严重错误, 检查了是否存在但仍然插入新用户失败", err.Error(), "openid:", openid)
 			m.HaveError = true
 			m.Info = "插入用户信息失败"
+			return
 		}
 		tokenChan := make(chan string)
 		go util.AsyncGenerateToken(string(userId), tokenChan)
@@ -386,6 +390,7 @@ func (m *Message) UpdateUserInfo(userId string, nickname, signature string, gend
 		m.HaveError = true
 		m.IsSuccess = false
 		m.Info = err.Error()
+		return
 	} else {
 		m.HaveError = false
 		m.IsSuccess = true
@@ -398,6 +403,7 @@ func (m *Message) UpdateTeacherInfo(userId string, introduction string) {
 		m.HaveError = true
 		m.IsSuccess = false
 		m.Info = err.Error()
+		return
 	} else {
 		m.HaveError = false
 		m.IsSuccess = true

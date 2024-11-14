@@ -1,6 +1,9 @@
 package service
 
-import "api/db"
+import (
+	"api/db"
+	"api/loger"
+)
 
 // 尝试service的另一种写法
 // 新增一个课程
@@ -16,15 +19,18 @@ func (m *Message) InsertNewCourse(account string, recommendMaxNum, recommendMinN
 	err, isUnique := db.InsertNewCourse(adminId, recommendMaxNum, recommendMinNum, courseName, courseSubject, introduction, introductionURL, isGroup, isTeam, isVIP)
 	if !isUnique {
 		// 名字重复
+		loger.Loger.Println("名字重复")
 		m.IsSuccess = false
 		m.Info = err.Error()
-		m.HaveError = false
+		m.HaveError = true
+		return
 	}
 	if err != nil {
 		// 其他错误
 		m.IsSuccess = false
 		m.Info = err.Error()
 		m.HaveError = true
+		return
 	}
 	m.HaveError = false
 	m.Info = "成功新增一个课程"
@@ -33,18 +39,20 @@ func (m *Message) InsertNewCourse(account string, recommendMaxNum, recommendMinN
 
 // 删除一个课程
 func (m *Message) DropCourseByName(name string) {
-	err, notExist := db.DeleteCourseByName(name)
-	if notExist {
+	err, isExist := db.DeleteCourseByName(name)
+	if !isExist {
 		// 课程不存在
 		m.IsSuccess = false
 		m.Info = "课程不存在"
 		m.HaveError = false
+		return
 	}
 	if err != nil {
 		// 其他错误
 		m.IsSuccess = false
 		m.Info = err.Error()
 		m.HaveError = true
+		return
 	}
 	m.HaveError = false
 	m.Info = "成功删除课程"
@@ -59,6 +67,7 @@ func (m *Message) SelectCourse() {
 		m.IsSuccess = false
 		m.Info = err.Error()
 		m.HaveError = true
+		return
 	}
 	m.Result = courses
 	m.HaveError = false

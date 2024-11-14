@@ -1,6 +1,7 @@
 package nets
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -63,7 +64,7 @@ func insertNewCourse(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": m.Info})
 }
-func dropCourseByName(c *gin.Context) {
+func deleteCourseByName(c *gin.Context) {
 	type CourseInfo struct {
 		Token      string `json:"token"`
 		CourseName string `json:"course_name"`
@@ -84,14 +85,19 @@ func dropCourseByName(c *gin.Context) {
 
 	var m service.Message
 	m.DropCourseByName(getData.CourseName)
+	fmt.Println(m, "m2:")
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
+		fmt.Println("code3")
 		return
 	}
 	if !m.IsSuccess {
+		fmt.Println("不存在吧")
+		fmt.Println("code2")
 		c.JSON(400, gin.H{"message": m.Info})
 		return
 	}
+	fmt.Println("code1")
 	loger.Loger.Println("! dangerous ->", account, "<- 这个account的admin用户删除了一个课程:", getData.CourseName)
 	c.JSON(200, gin.H{"message": m.Info})
 }

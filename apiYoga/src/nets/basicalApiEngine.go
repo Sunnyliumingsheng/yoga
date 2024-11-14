@@ -29,7 +29,7 @@ func basicalApiEngine(r *gin.Engine) {
 	r.POST("/api/admin/entrance", electronEntrance)
 	r.POST("/api/admin/update/teacher/info", updateTeacherInfo)
 	// 管理员和老师使用的有关课程的
-	r.POST("/api/admin/drop/course/by/name", dropCourseByName)
+	r.POST("/api/admin/delete/course/by/name", deleteCourseByName)
 	r.POST("/api/admin/insert/course", insertNewCourse)
 	r.POST("/api/admin/select/course", selectCourseByElectron)
 	// 用户端使用的关于课程的

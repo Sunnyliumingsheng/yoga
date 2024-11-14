@@ -8,18 +8,23 @@ import (
 )
 
 // 根据课程名称删除一个课程
-func DeleteCourseByName(courseName string) (err error, notExist bool) {
-	course := &Course{}
-	notExist = checkCourseNameUnique(courseName)
-	if notExist {
-		return nil, notExist
+func DeleteCourseByName(courseName string) (err error, isExist bool) {
+	// 检查课程名称是否存在
+	isExist = checkCourseNameExist(courseName)
+	// 如果课程不存在，直接返回
+	if !isExist {
+		return nil, isExist
 	}
-	err = postdb.Where("course_name =?", courseName).Delete(course).Error
+	// 执行删除操作
+	err = postdb.Where("course_name =?", courseName).Delete(&Course{}).Error
 	if err != nil {
+		// 记录错误日志
 		loger.Loger.Println("error: DeleteCourseByName", err, "courseName:", courseName)
-		return err, notExist
+		return err, isExist
 	}
-	return nil, notExist
+
+	// 删除成功，返回 nil 错误和 notExist 标志
+	return nil, isExist
 }
 
 // 新增一个课程,成功返回nil和true。失败返回error，可能返回.false名称重复
@@ -36,7 +41,7 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 		RecommendMaxNum: recommendMaxNum,
 		RecommendMinNum: recommendMinNum,
 	}
-	if !checkCourseNameUnique(courseName) {
+	if !checkCourseNameExist(courseName) {
 		return errors.New("课程名称重复,请另外挑选新的"), false
 	}
 	course.AdminID = adminId
@@ -58,14 +63,14 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 	return nil, true
 }
 
-// 检查课程是否名称唯一
-func checkCourseNameUnique(courseName string) (isUnique bool) {
+// 检查课程是否名称是否存在
+func checkCourseNameExist(courseName string) (isUnique bool) {
 	var count int64
 	err := postdb.Model(&Course{}).Where("course_name=?", courseName).Count(&count).Error
 	if err != nil {
 		loger.Loger.Println("error: 出现错误,找到课程名称为 ", courseName, "的课程时出现了错误", err.Error())
 	}
-	return count == 0
+	return count > 0
 }
 
 // 检索所有课程
