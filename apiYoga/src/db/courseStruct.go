@@ -3,7 +3,7 @@ package db
 import "time"
 
 type Course struct {
-	CourseID        uint `gorm:"primaryKey"`
+	CourseID        int `gorm:"primaryKey"`
 	AdminID         int
 	CourseName      string `gorm:"size:255"`
 	CourseSubject   string

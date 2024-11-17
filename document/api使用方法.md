@@ -25,3 +25,12 @@ the rename api recieve a nested json:
         Session string `json:"session"`
         Token   string `json:"token"`
     }
+3. userInfo
+user can update themselves info.
+/api/update/user/info
+    type newUserInfo struct {
+            AuthenticationInfo AuthenticationInfo `json:"authentication"`
+            Nickname           string             `json:"nickname"`
+            Gender             bool               `json:"gender"`
+            Signature          string             `json:"signature"`
+        }
