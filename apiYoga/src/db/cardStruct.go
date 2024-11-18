@@ -61,3 +61,10 @@ type InputCardInfo struct {
 	SupportCourseId  []int  `json:"support_course_id"`
 	Price            int    `json:"price"`
 }
+
+// 第一次请求返回的结构体
+type CardComplexInfo struct {
+	CardInfo          CardList      `json:"card_list"`
+	SupportCourseInfo []CourseBasic `json:"support_course_info"`
+	ForbidCourseInfo  []CourseBasic `json:"forbid_course_info"`
+}

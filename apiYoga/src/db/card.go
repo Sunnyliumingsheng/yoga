@@ -45,7 +45,7 @@ func InsertNewCard(input InputCardInfo) (err error) {
 		}
 	}
 	if cardInfo.IsSupportSpecial {
-		for supportInfo := range input.SupportCourseId {
+		for _, supportInfo := range input.SupportCourseId {
 			cardSupportInfo := CardSupportList{
 				CourseId: supportInfo,
 				CardId:   cardInfo.CardId,
@@ -62,4 +62,28 @@ func InsertNewCard(input InputCardInfo) (err error) {
 func DeleteNewCardByName(cardName string) (err error) {
 	err = postdb.Where("card_name = ?", cardName).Delete(&CardList{}).Error
 	return err
+}
+func SelectAllCardBasicInfo() (cardInfo []CardComplexInfo, err error) {
+	// 检索功能是不用事务的
+	var cardLists []CardList
+	err = postdb.Model(&CardList{}).Find(&cardLists).Error
+	if err != nil {
+		return nil, err
+	}
+	for index, card := range cardLists {
+		var forbidCourses []CourseBasic
+		var supportCourse []CourseBasic
+		err = postdb.Model(&CardForbidList{}).Where("card_id=?", card.CardId).Select("course_id,course_name").Find(&forbidCourses).Error
+		if err != nil {
+			return nil, err
+		}
+		cardInfo[index].ForbidCourseInfo = forbidCourses
+		err = postdb.Model(&CardSupportList{}).Where("card_id=?", card.CardId).Select("course_id,course_name").Find(&supportCourse).Error
+		if err != nil {
+			return nil, err
+		}
+		cardInfo[index].SupportCourseInfo = supportCourse
+		cardInfo[index].CardInfo = card
+	}
+	return cardInfo, nil
 }

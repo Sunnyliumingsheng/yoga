@@ -30,7 +30,7 @@ func DeleteCourseByName(courseName string) (err error, isExist bool) {
 // 新增一个课程,成功返回nil和true。失败返回error，可能返回.false名称重复
 func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, courseSubject, introduction, introductionURL string, isGroup, isTeam, isVIP bool) (err error, isUnique bool) {
 	course := &Course{
-		AdminID:         0,
+		AdminId:         0,
 		CourseName:      config.Config.NewCourseDefaultInfo.CourseName,
 		CourseSubject:   config.Config.NewCourseDefaultInfo.CourseSubject,
 		IntroductionURL: config.Config.NewCourseDefaultInfo.Introduction,
@@ -44,7 +44,7 @@ func InsertNewCourse(adminId, recommendMaxNum, recommendMinNum int, courseName, 
 	if !checkCourseNameExist(courseName) {
 		return errors.New("课程名称重复,请另外挑选新的"), false
 	}
-	course.AdminID = adminId
+	course.AdminId = adminId
 	course.CourseName = courseName
 	course.CourseSubject = courseSubject
 	course.Introduction = introduction

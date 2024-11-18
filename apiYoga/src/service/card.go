@@ -31,3 +31,16 @@ func (m *Message) DeleteNewCardByName(cardName string, account string) {
 	m.IsSuccess = true
 	return
 }
+func (m *Message) SelectAllCardBasicInfo() {
+	cardinfo, err := db.SelectAllCardBasicInfo()
+	if err != nil {
+		m.HaveError = true
+		m.Info = err.Error()
+		m.IsSuccess = false
+		return
+	}
+	m.HaveError = false
+	m.Info = "查询成功"
+	m.Result = cardinfo
+	m.IsSuccess = true
+}

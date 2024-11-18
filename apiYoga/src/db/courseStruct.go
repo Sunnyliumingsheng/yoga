@@ -3,8 +3,8 @@ package db
 import "time"
 
 type Course struct {
-	CourseID        int `gorm:"primaryKey"`
-	AdminID         int
+	CourseId        int `gorm:"primaryKey"`
+	AdminId         int
 	CourseName      string `gorm:"size:255"`
 	CourseSubject   string
 	IntroductionURL string `gorm:"size:255"`
@@ -15,4 +15,8 @@ type Course struct {
 	RecommendMaxNum int
 	RecommendMinNum int
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
+}
+type CourseBasic struct {
+	CourseID   int    `json:"courseID"`
+	CourseName string `json:"courseName"`
 }

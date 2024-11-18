@@ -89,3 +89,30 @@ func DeleteNewCardByName(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": "success"})
 }
+func SelectAllCardBasicInfo(c *gin.Context) {
+	type userInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+	}
+	var getData userInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	_, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	var m service.Message
+	m.SelectAllCardBasicInfo()
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	var cards []db.CardComplexInfo
+	cards, ok := m.Result.([]db.CardComplexInfo)
+	if !ok {
+		c.JSON(400, gin.H{"error": "解析返回结果失败"})
+	}
+	c.JSON(200, gin.H{"cards": cards})
+
+}
