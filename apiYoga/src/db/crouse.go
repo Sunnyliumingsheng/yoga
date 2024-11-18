@@ -82,3 +82,11 @@ func SelectCourse() (courses []Course, err error) {
 	}
 	return courses, nil
 }
+func SelectCourseInfo(courseId int) (course Course, err error) {
+	err = postdb.Where("id=?", courseId).First(&course).Error
+	if err != nil {
+		loger.Loger.Println("error: 出现错误, 查询课程id为 ", courseId, "的课程时出现了错误", err.Error())
+		return Course{}, err
+	}
+	return course, nil
+}

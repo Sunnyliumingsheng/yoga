@@ -155,3 +155,26 @@ func selectCourseByElectron(c *gin.Context) {
 		c.JSON(200, gin.H{"courses": courses})
 	}
 }
+func selectCourseInfo(c *gin.Context) {
+	type courseInfo struct {
+		CourseId int `json:"course_id"`
+	}
+	var getData courseInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	var m service.Message
+	m.SelectCourseInfo(getData.CourseId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	var course db.Course
+	course, ok := m.Result.(db.Course)
+	if !ok {
+		c.JSON(400, gin.H{"error": "课程不存在,或者格式错误"})
+		return
+	}
+	c.JSON(200, gin.H{"courseInfo": course})
+}

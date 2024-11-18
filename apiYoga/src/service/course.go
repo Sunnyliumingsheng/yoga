@@ -75,4 +75,13 @@ func (m *Message) SelectCourse() {
 	m.IsSuccess = true
 }
 
-//本文件中这些对于message的操作方法很好,能批量复制
+// 本文件中这些对于message的操作方法很好,能批量复制
+func (m *Message) SelectCourseInfo(courseId int) {
+	course, err := db.SelectCourseInfo(courseId)
+	if err != nil {
+		m.HaveError = true
+		m.Info = err.Error()
+	}
+	m.Result = course
+	m.HaveError = false
+}
