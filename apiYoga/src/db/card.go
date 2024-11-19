@@ -132,3 +132,11 @@ func SelectBasicCardInfo(UserCard map[int]BasicCardInfo) (err error) {
 	}
 	return nil
 }
+func SelectPurchaseRecord(userId int) (purchaseRecord []CardPurchaseRecord, err error) {
+	err = postdb.Where("user_id=?", userId).Find(&purchaseRecord).Error
+	return purchaseRecord, err
+}
+func DeletePurchaseRecord(purchaseId int) (err error) {
+	err = postdb.Where("purchase_id=?", purchaseId).Delete(&CardPurchaseRecord{}).Error
+	return err
+}

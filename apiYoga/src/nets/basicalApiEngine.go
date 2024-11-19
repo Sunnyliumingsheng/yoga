@@ -40,4 +40,8 @@ func basicalApiEngine(r *gin.Engine) {
 	r.POST("/api/delete/card/by/name", deleteNewCardByName)
 	r.POST("/api/insert/card", insertNewCard)
 	r.POST("/api/select/all/card", selectAllCardBasicInfo)
+	// 开发者和管理员使用的
+	r.POST("/api/root/delete/purchase/record/by/purchaseId", deletePurchaseRecordByPurchaseId)
+	// 所有人都可以使用的检索购买记录的
+	r.POST("/api/select/purchase/record/by/userId", selectPurchaseRecordByUserId)
 }

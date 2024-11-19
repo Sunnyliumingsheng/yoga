@@ -89,19 +89,21 @@ func deleteNewCardByName(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": "success"})
 }
+
+// 这里做出了修改，注释可见，即为解除了查看的权限
 func selectAllCardBasicInfo(c *gin.Context) {
-	type userInfo struct {
-		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
-	}
-	var getData userInfo
-	if err := c.ShouldBindJSON(&getData); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	_, err := authentication(getData.AuthenticationInfo, c)
-	if err != nil {
-		return
-	}
+	// type userInfo struct {
+	// 	AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+	// }
+	// var getData userInfo
+	// if err := c.ShouldBindJSON(&getData); err != nil {
+	// 	c.JSON(400, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// _, err := authentication(getData.AuthenticationInfo, c)
+	// if err != nil {
+	// 	return
+	// }
 	var m service.Message
 	m.SelectAllCardBasicInfo()
 	if m.HaveError {
@@ -114,5 +116,28 @@ func selectAllCardBasicInfo(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "解析返回结果失败"})
 	}
 	c.JSON(200, gin.H{"cards": cards})
+}
 
+// 这个可以查看某人的购买记录，为了方便也不需要鉴定权限
+func selectPurchaseRecordByUserId(c *gin.Context) {
+	type selectInfo struct {
+		UserId int `json:"user_id"`
+	}
+	var getData selectInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	var m service.Message
+	m.SelectPurchaseRecord(getData.UserId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	var purchaseRecords []db.CardPurchaseRecord
+	purchaseRecords, ok := m.Result.([]db.CardPurchaseRecord)
+	if !ok {
+		c.JSON(400, gin.H{"error": "解析返回结果失败"})
+	}
+	c.JSON(200, gin.H{"purchase_records": purchaseRecords})
 }

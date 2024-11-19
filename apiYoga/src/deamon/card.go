@@ -18,6 +18,6 @@ func FlashUserCard() {
 }
 
 // 为减少性能消耗，新卡购买完全可以不需要使用太多的资源，只添加一个新的就行了
-func FlashUserCardForNewCard() {
-
+func FlashUserCardForNewCard(userId int, cardInfo db.BasicCardInfo) {
+	UserCard[userId] = cardInfo
 }
