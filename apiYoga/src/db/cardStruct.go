@@ -23,14 +23,13 @@ type CardList struct {
 
 type CardPurchaseRecord struct {
 	PurchaseId      int       `gorm:"primaryKey;autoIncrement"` // SERIAL PRIMARY KEY
-	AdminAccount    string    `gorm:"size:255"`                 // VARCHAR(255)
+	AdminUsername   string    `gorm:"size:255"`                 // VARCHAR(255)
 	CardId          int       // card_lists(card_id)
 	UserId          int       // INT
 	Money           int       // INT
 	InviteTeacherId int       // INT
 	StartDate       time.Time // DATE
 	EndDate         time.Time // DATE
-	Days            int       // INT
 	Times           int       // INT
 }
 
@@ -67,4 +66,14 @@ type CardComplexInfo struct {
 	CardInfo          CardList      `json:"card_list"`
 	SupportCourseInfo []CourseBasic `json:"support_course_info"`
 	ForbidCourseInfo  []CourseBasic `json:"forbid_course_info"`
+}
+type BasicCardInfo struct {
+	CardId           int
+	IsSupportGroup   bool
+	IsSupportTeam    bool
+	IsSupportVIP     bool
+	IsLimitDays      bool
+	IsLimitTimes     bool
+	IsForbidSpecial  bool
+	IsSupportSpecial bool
 }

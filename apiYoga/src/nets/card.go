@@ -62,7 +62,7 @@ func insertNewCard(c *gin.Context) {
 }
 
 // 删除会员卡，如果已经有人买了这个卡会失效的
-func DeleteNewCardByName(c *gin.Context) {
+func deleteNewCardByName(c *gin.Context) {
 	type deleteCardInfo struct {
 		Token    string `json:"token"`
 		CardName string `json:"card_name"`
@@ -89,7 +89,7 @@ func DeleteNewCardByName(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": "success"})
 }
-func SelectAllCardBasicInfo(c *gin.Context) {
+func selectAllCardBasicInfo(c *gin.Context) {
 	type userInfo struct {
 		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
 	}

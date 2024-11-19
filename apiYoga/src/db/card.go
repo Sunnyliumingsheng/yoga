@@ -1,6 +1,9 @@
 package db
 
-import "api/loger"
+import (
+	"api/loger"
+	"time"
+)
 
 func InsertNewCard(input InputCardInfo) (err error) {
 	tx := postdb.Begin()
@@ -86,4 +89,46 @@ func SelectAllCardBasicInfo() (cardInfo []CardComplexInfo, err error) {
 		cardInfo[index].CardInfo = card
 	}
 	return cardInfo, nil
+}
+func InsertNewPurchaseCard(username string, cardId, userId int, money int, endDate time.Time, times int, invitedTeacherId int) (err error) {
+	newPurchaseInfo := CardPurchaseRecord{
+		AdminUsername:   username,
+		CardId:          cardId,
+		UserId:          userId,
+		Money:           money,
+		InviteTeacherId: invitedTeacherId,
+		StartDate:       time.Now(),
+		EndDate:         endDate,
+		Times:           times,
+	}
+	err = postdb.Model(&CardPurchaseRecord{}).Create(&newPurchaseInfo).Error
+	return err
+}
+func SelectBasicCardInfo(UserCard map[int]BasicCardInfo) (err error) {
+	currency := time.Now()
+	var userIds []int
+	err = postdb.Model(&CardPurchaseRecord{}).Where("end_date>=?", currency).Pluck("user_id", &userIds).Error
+	if err != nil {
+		loger.Loger.Println("money!!!:在检索用户购买会员卡的列表的时候严重问题,error:", err.Error())
+		return err
+	}
+	for _, userId := range userIds {
+		var cardInfo CardList
+		err = postdb.Model(&CardList{}).Where("user_id=?", userId).First(&cardInfo).Error
+		if err != nil {
+			loger.Loger.Println("money!!!:", "在检索用户购买列表的时候检索失败userid:", userId, "error:", err.Error())
+			return err
+		}
+		UserCard[userId] = BasicCardInfo{
+			CardId:           cardInfo.CardId,
+			IsSupportGroup:   cardInfo.IsSupportGroup,
+			IsSupportTeam:    cardInfo.IsSupportTeam,
+			IsSupportVIP:     cardInfo.IsSupportVIP,
+			IsLimitDays:      cardInfo.IsLimitDays,
+			IsLimitTimes:     cardInfo.IsLimitTimes,
+			IsForbidSpecial:  cardInfo.IsForbidSpecial,
+			IsSupportSpecial: cardInfo.IsSupportSpecial,
+		}
+	}
+	return nil
 }

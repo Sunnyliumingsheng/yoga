@@ -3,7 +3,6 @@ package nets
 import (
 	"github.com/gin-gonic/gin"
 
-	"api/config"
 	"api/service"
 )
 
@@ -12,11 +11,6 @@ import (
 type SudoAuthentication struct {
 	SudoName     string `json:"account"`
 	SudoPassword string `json:"password"`
-}
-
-// 如果你想修改登录逻辑,请修改这里,修改之前,请确定你已经看了config/types.go
-func authenticateSudo(s SudoAuthentication) bool {
-	return s.SudoName == config.Config.Sudo.SuperUsername && s.SudoPassword == config.Config.Sudo.SuperPassword
 }
 
 func sudoLogin(c *gin.Context) {
