@@ -23,19 +23,20 @@ func StartClient() {
 	postgresInit()
 
 }
-func redisInit() {
-	loger.Loger.Println(config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port))
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port),
-		Password: config.Config.RedisConfig.Password,
-		DB:       config.Config.RedisConfig.Db,
-	})
 
-	_, err := rdb.Ping().Result()
-	if err != nil {
-		loger.Loger.Panic("redis client error : ", err.Error())
-	}
-}
+// func redisInit() {
+// 	loger.Loger.Println(config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port))
+// 	rdb = redis.NewClient(&redis.Options{
+// 		Addr:     config.Config.RedisConfig.IpAddress + ":" + fmt.Sprint(config.Config.RedisConfig.Port),
+// 		Password: config.Config.RedisConfig.Password,
+// 		DB:       config.Config.RedisConfig.Db,
+// 	})
+
+//		_, err := rdb.Ping().Result()
+//		if err != nil {
+//			loger.Loger.Panic("redis client error : ", err.Error())
+//		}
+//	}
 func postgresInit() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", config.Config.PostgresConfig.IpAddress, config.Config.PostgresConfig.Username, config.Config.PostgresConfig.Password, config.Config.PostgresConfig.Dbname, config.Config.PostgresConfig.Port)
 	var err error

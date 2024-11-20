@@ -140,3 +140,25 @@ func DeletePurchaseRecord(purchaseId int) (err error) {
 	err = postdb.Where("purchase_id=?", purchaseId).Delete(&CardPurchaseRecord{}).Error
 	return err
 }
+func IsCourseIdInCardSpecialSupport(cardId int, courseId int) (isIn bool, err error) {
+	var count int64
+	// 查询 CardForbidList 表中是否存在指定的 cardId 和 courseId
+	err = postdb.Model(&CardForbidList{}).Where("card_id = ? AND course_id = ?", cardId, courseId).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	// 如果 count 大于 0，说明记录存在
+	return count > 0, nil
+}
+func IsCourseIdInSpecialForbid(cardId int, courseId int) (isForbid bool, err error) {
+	var count int64
+	// 查询 CardForbidList 表中是否存在指定的 cardId 和 courseId
+	err = postdb.Model(&CardForbidList{}).Where("card_id =? AND course_id =?", cardId, courseId).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	// 如果 count 大于 0，说明记录存在
+	return count > 0, nil
+}

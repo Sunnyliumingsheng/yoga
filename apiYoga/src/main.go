@@ -3,6 +3,7 @@ package main
 import (
 	"api/config"
 	"api/db"
+	"api/deamon"
 	"api/loger"
 	"api/nets"
 	"api/picture"
@@ -15,6 +16,6 @@ func main() {
 	config.UnmarshalConfig()
 	db.StartClient()
 	service.StartService()
+	deamon.StartAllDeamon()
 	nets.StartApiEngine()
-
 }

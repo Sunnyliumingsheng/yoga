@@ -1,6 +1,8 @@
 package deamon
 
-func init() {
-	FlashUserCard()
+import "api/loger"
 
+func StartAllDeamon() {
+	FlashUserCard()
+	loger.Loger.Println("finish all deamon")
 }

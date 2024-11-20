@@ -90,5 +90,63 @@ func CanStudentReserveThisCourse(userId int, courseId int) (isOk bool, err error
 	if !isExist {
 		return false, errors.New("请先购买会员卡")
 	}
+	courseType, err := db.SelectCourseTypeByCourseId(courseId)
+	if err != nil {
+		return false, err
+	}
+	if !basicCardInfo.IsForbidSpecial { //如果没有特殊禁止
+		switch courseType {
+		case 0:
+			if basicCardInfo.IsSupportVIP {
+				return true, nil
+			}
+		case 1:
+			if basicCardInfo.IsSupportTeam {
+				return true, nil
+			}
+		case 2:
+			if basicCardInfo.IsSupportGroup {
+				return true, nil
+			}
+		default:
+			loger.Loger.Println("并没有捕获到错误,但是课程类型异常")
+			return false, errors.New("逻辑错误，请联系管理员")
+		}
+		//如果简单的判断不行那就去看看特殊支持
+		return db.IsCourseIdInCardSpecialSupport(basicCardInfo.CardId, courseId)
+	} else { // 如果有特殊禁止
+		// 有特殊禁止一律不给通过
+		isForbid, err := db.IsCourseIdInSpecialForbid(basicCardInfo.CardId, courseId)
+		if err != nil {
+			return false, err
+		}
+		if isForbid {
+			return false, nil
+		} else { //没有被特殊禁止掉
+			//正常检索一次
+			courseType, err := db.SelectCourseTypeByCourseId(courseId)
+			if err != nil {
+				return false, err
+			}
+			switch courseType {
+			case 0:
+				if basicCardInfo.IsSupportVIP {
+					return true, nil
+				}
+			case 1:
+				if basicCardInfo.IsSupportTeam {
+					return true, nil
+				}
+			case 2:
+				if basicCardInfo.IsSupportGroup {
+					return true, nil
+				}
+			default:
+				loger.Loger.Println("并没有捕获到错误,但是课程类型异常2")
+				return false, errors.New("逻辑错误，请联系管理员")
+			}
+			return false, nil
 
+		}
+	}
 }

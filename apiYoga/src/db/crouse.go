@@ -90,3 +90,21 @@ func SelectCourseInfo(courseId int) (course Course, err error) {
 	}
 	return course, nil
 }
+func SelectCourseTypeByCourseId(courseId int) (courseType int, err error) {
+	var course Course
+	err = postdb.Where("id=?", courseId).First(&course).Error
+	if err != nil {
+		loger.Loger.Println("error: 出现错误, 查询课程id为 ", courseId, "的课程时出现了错误", err.Error())
+		return 0, err
+	}
+	if course.IsVipType {
+		return 0, nil
+	}
+	if course.IsTeamType {
+		return 1, nil
+	}
+	if course.IsGroupType {
+		return 2, nil
+	}
+	return -1, errors.New("课程错误，请联系管理员")
+}
