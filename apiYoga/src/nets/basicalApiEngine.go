@@ -37,11 +37,14 @@ func basicalApiEngine(r *gin.Engine) {
 	// 任何人使用的有关课程的
 	r.POST("/api/select/course", selectCourseInfo)
 	// 管理员和老师使用的有关会员卡的
-	r.POST("/api/delete/card/by/name", deleteNewCardByName)
-	r.POST("/api/insert/card", insertNewCard)
-	r.POST("/api/select/all/card", selectAllCardBasicInfo)
+	r.POST("/api/admin/delete/card/by/name", deleteNewCardByName)
+	r.POST("/api/admin/insert/card", insertNewCard)
+	r.POST("/api/admin/select/all/card", selectAllCardBasicInfo)
 	// 开发者和管理员使用的
 	r.POST("/api/root/delete/purchase/record/by/purchaseId", deletePurchaseRecordByPurchaseId)
 	// 所有人都可以使用的检索购买记录的
 	r.POST("/api/select/purchase/record/by/userId", selectPurchaseRecordByUserId)
+	// 管理员和老师使用的有关课程的
+	r.POST("/api/admin/insert/class", insertNewClass)
+	r.POST("/api/admin/delete/class", deleteClass)
 }

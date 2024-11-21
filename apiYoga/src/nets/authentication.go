@@ -1,6 +1,8 @@
 package nets
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 
 	"api/config"
@@ -24,10 +26,11 @@ func authentication(info AuthenticationInfo, c *gin.Context) (sessionInfo servic
 	m.SessionAndTokenAuthentication(info.Session, info.Token)
 	if m.HaveError {
 		c.JSON(400, gin.H{"error": m.Info})
-		return
+		return sessionInfo, errors.New("存在错误" + m.Info)
 	}
 	if !m.IsSuccess {
 		c.JSON(400, gin.H{"message": m.Info})
+		return sessionInfo, errors.New("验证失败" + m.Info)
 	}
 	sessionInfo = m.Result.(service.SessionInfo)
 	return sessionInfo, nil

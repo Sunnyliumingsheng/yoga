@@ -45,6 +45,7 @@ type ClassActived struct {
 	Index     int
 	ResumeNum int
 	TeacherId int
+	Max       int
 }
 type UserResumeInfo struct {
 	userId    int
