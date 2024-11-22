@@ -14,41 +14,93 @@ var activedClass [4]mymap
 var nowWeekDay int
 var pmap int
 
-type Savable struct {
-	ClassInfo  map[int]db.ClassActived
-	ResumeInfo map[int][]db.UserResumeInfo
-	Num        int
-}
+func SelectResumeInfo(classId int)
 
-func FlashActivedClass() {
-	// 保存为记录 等下再写
-	// 找到所有已经激活的而且dayofweek相等于今天的
-	weekday := time.Now().Weekday()
-	intWeekday := int(weekday)
-	classList, err := db.SelectActivedClassThisWeekday(intWeekday)
+func SelectClass() (resumeable [4][]db.ClassActived) {
+	for i := 0; i < 4; i++ {
+		for classActived, _ := range activedClass[i] {
+			resumeable[i] = append(resumeable[i], classActived)
+		}
+	}
+	return resumeable
+}
+func Resume(userId, classId int) (isOk bool, err error) {
+	resumeWeekDay, err := db.SelectWeekdayByClassId(classId)
 	if err != nil {
-		loger.Loger.Println("error:", err.Error())
+		return false, err
 	}
-	for _, class := range classList {
-		var classActived db.ClassActived
-		classActived.ClassId = class.ClassId
-		classActived.Index = class.Index
-		classActived.ResumeNum = 0
-		classActived.TeacherId = class.TeacherId
-		classActived.Max = class.Max
-		// 这里使用make如果不设置0,就会自动填充0值，而max指定有利于性能
+	p := ((((resumeWeekDay - nowWeekDay) % 7) + pmap) % 4)
+	if activedClass[p][db.ClassActived{ClassId: classId}] == nil {
+		return false, nil
 	}
+	activedClass[p][db.ClassActived{ClassId: classId}] = append(activedClass[p][db.ClassActived{ClassId: classId}], db.UserResumeInfo{
+		UserId: userId,
+		Status: 0,
+	})
+	return true, nil
 }
 
 // 这里是今天添加今天的课这种情况使用的
-func AddActivedClass(class db.ClassList) {
+func InsertNewActivedClass(class db.ClassList) {
 	var classActived db.ClassActived
 	classActived.ClassId = class.ClassId
 	classActived.Index = class.Index
 	classActived.ResumeNum = 0
 	classActived.TeacherId = class.TeacherId
 	classActived.Max = class.Max
-	// 这里使用make如果不设置0,就会自动填充0值，而max指定有利于性能
+	// this algorithm is checked shortly ,may mistake sometimes
+	p := ((((class.DayOfWeek - nowWeekDay) % 7) + pmap) % 4)
+	activedClass[p][classActived] = make([]db.UserResumeInfo, class.Max)
+}
+
+// when program start to do,init the data structure
+func InitActivedClass() {
+	weekday := time.Now().Weekday()
+	nowWeekDay = int(weekday)
+	for i := 0; i <= 3; i++ {
+		classList, err := db.SelectActivedClassThisWeekday((nowWeekDay + i) % 7)
+		if err != nil {
+			loger.Loger.Println("error:", err.Error())
+		}
+		for _, class := range classList {
+			var classActived db.ClassActived
+			classActived.ClassId = class.ClassId
+			classActived.Index = class.Index
+			classActived.ResumeNum = 0
+			classActived.TeacherId = class.TeacherId
+			classActived.Max = class.Max
+			activedClass[i] = make(mymap)
+			activedClass[i][classActived] = make([]db.UserResumeInfo, 0, classActived.Max)
+		}
+	}
+	pmap = 0
+}
+
+// renew the data structure,every night todo
+func RenewActivedClass() {
+	nowWeekDay = ((nowWeekDay + 1) % 7)
+	activedClass[pmap] = nil
+	newActivedClassList, err := db.SelectActivedClassThisWeekday(nowWeekDay)
+	if err != nil {
+		loger.Loger.Println("error:", err.Error())
+		return
+	}
+	for _, class := range newActivedClassList {
+		var classActived db.ClassActived
+		classActived.ClassId = class.ClassId
+		classActived.Index = class.Index
+		classActived.ResumeNum = 0
+		classActived.TeacherId = class.TeacherId
+		classActived.Max = class.Max
+		activedClass[pmap][classActived] = make([]db.UserResumeInfo, 0, classActived.Max)
+	}
+	pmap = (pmap + 1) % 4
+}
+
+type Savable struct {
+	ClassInfo  map[int]db.ClassActived
+	ResumeInfo map[int][]db.UserResumeInfo
+	Num        int
 }
 
 // 将一个mymap转化为可保存的格式
@@ -72,8 +124,8 @@ func (m mymap) tie(savable Savable) {
 }
 
 // 保存为json文件格式
-func (m mymap) storage(savable Savable) {
-	jsonData, err := json.Marshal(savable)
+func storage(savables [4]Savable) {
+	jsonData, err := json.Marshal(savables)
 	if err != nil {
 		loger.Loger.Println("error:不能解析json", err.Error())
 		return
@@ -91,7 +143,7 @@ func (m mymap) storage(savable Savable) {
 	}
 	loger.Loger.Println("success: 已保存为json格式")
 }
-func (m mymap) recover() (savable Savable) {
+func recover() (savables [4]Savable) {
 	file, err := os.Open("resume.json")
 	if err != nil {
 		loger.Loger.Println("error: 无法打开json文件", err.Error())
@@ -104,10 +156,27 @@ func (m mymap) recover() (savable Savable) {
 		loger.Loger.Println("error: 读取json数据失败", err.Error())
 		return
 	}
-	err = json.Unmarshal(jsonData[:n], &savable)
+	err = json.Unmarshal(jsonData[:n], &savables)
 	if err != nil {
 		loger.Loger.Println("error: 解析json数据失败", err.Error())
 		return
 	}
-	return savable
+	return savables
+}
+
+// if you want to pause this program,and you are sure you will reboot soon,you can storage,and soon getStorage
+func StorageClass() {
+	var savables [4]Savable
+	for i := 0; i <= 3; i++ {
+		savables[i] = activedClass[i].untie()
+	}
+	storage(savables)
+}
+func GetStorageClass() {
+	var savables [4]Savable
+	savables = recover()
+	for i := 0; i <= 3; i++ {
+		activedClass[i] = nil
+		activedClass[i].tie(savables[i])
+	}
 }

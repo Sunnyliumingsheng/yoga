@@ -108,3 +108,15 @@ func SelectCourseTypeByCourseId(courseId int) (courseType int, err error) {
 	}
 	return -1, errors.New("课程错误，请联系管理员")
 }
+func SelectCourseInfoByClassId(classId int) (courseInfo Course, err error) {
+	var class ClassList
+	err = postdb.Model(&ClassList{}).Where("class_id =?", classId).First(&class).Error
+	if err != nil {
+		return Course{}, err
+	}
+	err = postdb.Model(&Course{}).Where("course_id=?", class.CourseId).First(&courseInfo).Error
+	if err != nil {
+		return Course{}, err
+	}
+	return courseInfo, nil
+}

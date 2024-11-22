@@ -24,3 +24,26 @@ func SelectAllClass() (classList []ClassList, err error) {
 	err = postdb.Find(&classList).Error
 	return classList, err
 }
+func SelectCourseIdByClassId(classId int) (courseId int, err error) {
+	var class ClassList
+	err = postdb.Where("class_id =?", classId).First(&class).Error
+	if err != nil {
+		return 0, err
+	}
+	return class.CourseId, err
+}
+func SelectWeekdayByClassId(classId int) (dayOfWeek int, err error) {
+	var class ClassList
+	err = postdb.Where("class_id =?", classId).First(&class).Error
+	if err != nil {
+		return 0, err
+	}
+	return class.DayOfWeek, err
+}
+func SelectTeachClassThisWeekday(teacherId, weekday int) (class []ClassList, err error) {
+	err = postdb.Model(&ClassList{}).Where("teacher_id=? AND day_of_week=?", teacherId, weekday).Find(&class).Error
+	if err != nil {
+		return nil, err
+	}
+	return class, nil
+}

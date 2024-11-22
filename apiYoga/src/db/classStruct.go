@@ -48,7 +48,7 @@ type ClassActived struct {
 	Max       int
 }
 type UserResumeInfo struct {
-	userId    int
-	status    int
-	checkinAt time.Time
+	UserId    int
+	Status    int
+	CheckinAt time.Time
 }

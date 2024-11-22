@@ -147,6 +147,26 @@ func selectAllActivedClass(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": classList})
 }
+func studentSelectClass(c *gin.Context) {
+	type selectInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+	}
+	var getData selectInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level > 3 {
+		c.JSON(400, gin.H{"message": "请先找管理员注册为正式学员"})
+	}
+	var m service.Message
+	m.StudentSelectClass()
+	c.JSON(200, m.Result)
+}
 func resume(c *gin.Context) {
 	type userInfo struct {
 		AuthenticationInfo AuthenticationInfo `json:"authentication"`
@@ -166,4 +186,55 @@ func resume(c *gin.Context) {
 	}
 	var m service.Message
 	m.Resume(getData.ClassId, sessionInfo.UserId)
+}
+
+// teacher can do this
+func selectResumeInfo(c *gin.Context) {
+	type selectInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authentication"`
+		ClassId            int                `json:"class_id"`
+	}
+	var getData selectInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level < 3 {
+		c.JSON(400, gin.H{"message": "请先寻找管理员注册为正式教师"})
+	}
+	var m service.Message
+	m.SelectResumeInfo(getData.ClassId)
+}
+func SelectTeachingClass(c *gin.Context) {
+	type selectInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authentication"`
+	}
+	var getData selectInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level > 3 {
+		c.JSON(400, gin.H{"message": "请先成为教师"})
+	}
+	userId := sessionInfo.UserId
+	var m service.Message
+	m.SelectTeachingClass(userId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	if !m.IsSuccess {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	c.JSON(200, m.Result)
 }

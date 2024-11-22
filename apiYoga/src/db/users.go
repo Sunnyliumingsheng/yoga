@@ -384,3 +384,11 @@ func UpdateTeacherInfo(userId, introduction string) (err error) {
 	postdb.Model(&Teacher{}).Where("user_id =?", userId).Updates(updateData)
 	return err
 }
+func SelectTeacherIdByUserId(userId int) (teacherId int, err error) {
+	var teacher Teacher
+	err = postdb.Model(&Teacher{}).Where("user_id = ?", userId).First(&teacher).Error
+	if err != nil {
+		return -1, err
+	}
+	return teacher.TeacherID, nil
+}
