@@ -65,6 +65,8 @@ func (m *Message) SelectAllClass() {
 	m.Info = "查询所有课程成功"
 	m.Result = classList
 }
+
+// select in the postgres not in the ram
 func (m *Message) SelectAllActivedClass() {
 	classList, err := db.SelectAllActivedClass()
 	if err != nil {
@@ -99,8 +101,8 @@ func (m *Message) Resume(classId, userId int) {
 		m.HaveError = false
 		return
 	}
-	isOK, err = deamon.Resume(userId, classId)
-	if !isOK {
+	err = deamon.Resume(userId, classId)
+	if err != nil {
 		m.IsSuccess = false
 		m.Info = err.Error()
 		m.HaveError = true
@@ -110,11 +112,40 @@ func (m *Message) Resume(classId, userId int) {
 	m.Info = "预约成功"
 	m.HaveError = false
 }
-func (m *Message) StudentSelectClass() {
-	var resumeable [4][]db.ClassActived
-	resumeable = deamon.SelectClass()
-	m.Result = resumeable
+
+// select in the ram
+func (m *Message) SelectActivedClass() {
+	fourDayClass, err := deamon.QuicklySelectClass()
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Result = fourDayClass
 }
+func (m *Message) SelectClassByClassId(classId int) {
+	var classInfo db.ClassActived
+	var resumeInfo []db.UserResumeInfo
+	var err error
+	classInfo, resumeInfo, err = deamon.QuicklySelectClassByClassId(classId)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Result = map[string]interface{}{
+		"classInfo":  classInfo,
+		"resumeInfo": resumeInfo,
+	}
+}
+
+// select in the postgres not the ram
 func (m *Message) SelectTeachingClass(userId int) {
 	teacherId, err := db.SelectTeacherIdByUserId(userId)
 	if err != nil {
@@ -134,4 +165,7 @@ func (m *Message) SelectTeachingClass(userId int) {
 	m.HaveError = false
 	m.IsSuccess = true
 	m.Result = class
+}
+func (m *Message) SelectClass(classId int) {
+
 }

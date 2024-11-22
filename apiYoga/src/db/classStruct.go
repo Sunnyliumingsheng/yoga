@@ -38,11 +38,15 @@ type Blacklist struct {
 	UserId int
 	EndAt  time.Time
 }
+type ActivedClassInfo struct {
+	ClassId      int
+	ClassActived ClassActived
+}
 
-// 这个存在于内存中，每天凌晨和重启的时候才会用到
+// 这几个存在于内存中，每天凌晨和重启的时候才会用到
 type ClassActived struct {
-	ClassId   int
 	Index     int
+	CourseId  int
 	ResumeNum int
 	TeacherId int
 	Max       int
@@ -51,4 +55,13 @@ type UserResumeInfo struct {
 	UserId    int
 	Status    int
 	CheckinAt time.Time
+}
+type OneDayClass struct {
+	ClassActived   map[int]ClassActived
+	UserResumeInfo map[int][]UserResumeInfo
+}
+type StorageStruct struct {
+	ccb        [4]OneDayClass
+	nowWeekDay int
+	pmap       int
 }

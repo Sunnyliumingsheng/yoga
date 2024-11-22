@@ -77,6 +77,8 @@ func deleteClass(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": m.Info})
 }
+
+// electron can active class
 func activeClass(c *gin.Context) {
 	type classInfo struct {
 		ClassId int    `json:"class_id"`
@@ -103,6 +105,8 @@ func activeClass(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": m.Info})
 }
+
+// electron can do this
 func selectAllClass(c *gin.Context) {
 	type selectInfo struct {
 		Token string `json:"token"`
@@ -131,7 +135,7 @@ func selectAllClass(c *gin.Context) {
 	c.JSON(200, gin.H{"message": classList})
 }
 
-// 任何人都可以使用
+// 任何人都可以使用 in the postgres
 func selectAllActivedClass(c *gin.Context) {
 	var m service.Message
 	m.SelectAllActivedClass()
@@ -147,26 +151,33 @@ func selectAllActivedClass(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": classList})
 }
-func studentSelectClass(c *gin.Context) {
-	type selectInfo struct {
-		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+
+// select in the ram,everyone can do this
+func selectActivedClass(c *gin.Context) {
+	var m service.Message
+	m.SelectActivedClass()
+	c.JSON(200, m.Result)
+}
+
+// select in ram,everyone can do this
+func selectClassByClassId(c *gin.Context) {
+	type SelectInfo struct {
+		ClassId int `json:"class_id"`
 	}
-	var getData selectInfo
+	var getData SelectInfo
 	if err := c.ShouldBindJSON(&getData); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
-	if err != nil {
+	var m service.Message
+	m.SelectClassByClassId(getData.ClassId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
 		return
 	}
-	if sessionInfo.Level > 3 {
-		c.JSON(400, gin.H{"message": "请先找管理员注册为正式学员"})
-	}
-	var m service.Message
-	m.StudentSelectClass()
 	c.JSON(200, m.Result)
 }
+
 func resume(c *gin.Context) {
 	type userInfo struct {
 		AuthenticationInfo AuthenticationInfo `json:"authentication"`
@@ -188,28 +199,8 @@ func resume(c *gin.Context) {
 	m.Resume(getData.ClassId, sessionInfo.UserId)
 }
 
-// teacher can do this
-func selectResumeInfo(c *gin.Context) {
-	type selectInfo struct {
-		AuthenticationInfo AuthenticationInfo `json:"authentication"`
-		ClassId            int                `json:"class_id"`
-	}
-	var getData selectInfo
-	if err := c.ShouldBindJSON(&getData); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
-	if err != nil {
-		return
-	}
-	if sessionInfo.Level < 3 {
-		c.JSON(400, gin.H{"message": "请先寻找管理员注册为正式教师"})
-	}
-	var m service.Message
-	m.SelectResumeInfo(getData.ClassId)
-}
-func SelectTeachingClass(c *gin.Context) {
+// select in postgres
+func selectTeachingClass(c *gin.Context) {
 	type selectInfo struct {
 		AuthenticationInfo AuthenticationInfo `json:"authentication"`
 	}
@@ -237,4 +228,39 @@ func SelectTeachingClass(c *gin.Context) {
 		return
 	}
 	c.JSON(200, m.Result)
+}
+
+// student can do this
+func cancelResume(c *gin.Context) {
+
+}
+
+// student can do this
+func selectMyResume(c *gin.Context) {
+
+}
+
+// change a user checkin status , teacher can do this
+func changeCheckinStatusUser(c *gin.Context) {
+
+}
+
+// checkin all user , cause it is usually to use
+func checkinAllUser(c *gin.Context) {
+
+}
+
+// select all record ,everyone can do this
+func selectRecord(c *gin.Context) {
+
+}
+
+// electron can do this ,select the black list
+func selectBlackList(c *gin.Context) {
+
+}
+
+// remove someone out of blask list ,only sudo can do this
+func deleteUserBlackList(c *gin.Context) {
+
 }
