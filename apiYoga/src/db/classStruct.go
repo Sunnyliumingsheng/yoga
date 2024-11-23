@@ -18,7 +18,6 @@ type ClassList struct {
 type ClassRecord struct {
 	ClassRecordId int `gorm:"primaryKey;autoIncrement"`
 	ClassId       int
-	StartTime     time.Time
 	EndTime       time.Time
 	ShouldCheckin int
 	ReallyCheckin int
@@ -38,6 +37,8 @@ type Blacklist struct {
 	UserId int
 	EndAt  time.Time
 }
+
+// this struct is used to response the request
 type ActivedClassInfo struct {
 	ClassId      int
 	ClassActived ClassActived
@@ -45,11 +46,13 @@ type ActivedClassInfo struct {
 
 // 这几个存在于内存中，每天凌晨和重启的时候才会用到
 type ClassActived struct {
-	Index     int
-	CourseId  int
-	ResumeNum int
-	TeacherId int
-	Max       int
+	Index      int
+	CourseId   int
+	ResumeNum  int
+	CheckinNum int
+	TeacherId  int
+	Max        int
+	RecordText string
 }
 type UserResumeInfo struct {
 	UserId    int

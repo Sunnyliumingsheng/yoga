@@ -237,7 +237,24 @@ func cancelResume(c *gin.Context) {
 
 // student can do this
 func selectMyResume(c *gin.Context) {
-
+	type userInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authentication"`
+	}
+	var getData userInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level > 3 {
+		c.JSON(400, gin.H{"error": "请先申请成为学生"})
+		return
+	}
+	var m service.Message
+	m.SelectMyResume(sessionInfo.UserId)
 }
 
 // change a user checkin status , teacher can do this
@@ -262,5 +279,13 @@ func selectBlackList(c *gin.Context) {
 
 // remove someone out of blask list ,only sudo can do this
 func deleteUserBlackList(c *gin.Context) {
+
+}
+
+// if you want to shutdown -r but still storage the ram,you can sudo this and quickly reboot
+func storageRam(c *gin.Context) {
+
+}
+func getStorageRam(c *gin.Context) {
 
 }

@@ -44,8 +44,22 @@ func InitActivedClass() {
 
 // renew the data structure,every night todo
 func RenewActivedClass() {
-	nowWeekDay = ((nowWeekDay + 1) % 7)
+	// firstly record the resume information
+	for classId, classInfo := range ccb[pmap].ClassActived {
+		recordId, err := db.InsertClassRecord(classId, classInfo)
+		if err != nil {
+			loger.Loger.Println("error: insert class record failed", err.Error())
+			return
+		}
+		err = db.InsertCheckinRecord(recordId, ccb[pmap].UserResumeInfo[classId])
+		if err != nil {
+			loger.Loger.Println("error : insert checkin record failed", err.Error())
+			return
+		}
+	}
+	// then delete the old map
 	ccb[pmap] = db.OneDayClass{}
+	nowWeekDay = ((nowWeekDay + 1) % 7)
 	newActivedClassList, err := db.SelectActivedClassThisWeekday(nowWeekDay)
 	if err != nil {
 		loger.Loger.Println("error:", err.Error())
@@ -53,20 +67,17 @@ func RenewActivedClass() {
 	}
 	for _, class := range newActivedClassList {
 		ccb[pmap].ClassActived[class.ClassId] = db.ClassActived{
-			CourseId:  class.CourseId,
-			Index:     class.Index,
-			ResumeNum: 0,
-			TeacherId: class.TeacherId,
-			Max:       class.Max,
+			CourseId:   class.CourseId,
+			Index:      class.Index,
+			ResumeNum:  0,
+			CheckinNum: 0,
+			TeacherId:  class.TeacherId,
+			Max:        class.Max,
+			RecordText: "",
 		}
 		ccb[pmap].UserResumeInfo[class.ClassId] = make([]db.UserResumeInfo, 0, class.Max)
 	}
 	pmap = (pmap + 1) % 4
-}
-
-// record the data in the pass day ,every night todo
-func RecordOneDayClassInfo() {
-
 }
 
 func QuicklySelectClass() (fourDayClass [4][]db.ActivedClassInfo, err error) {
@@ -94,13 +105,31 @@ func QuicklySelectClassByClassId(classId int) (db.ClassActived, []db.UserResumeI
 
 // student try to resume
 func Resume(userId, classId int) (err error) {
+	// find the class in this 4 day
 	for i := 0; i <= 3; i++ {
 		classActived, ok := ccb[i].ClassActived[classId]
-		if ok {
+		if ok { //if i find the class
+			// select the resume info
 			userResumeInfo, ok := ccb[i].UserResumeInfo[classId]
 			if !ok {
 				loger.Loger.Println("error: can find the class info but not the resume info", classId, userId)
 				return errors.New("出现错误，通知管理员")
+			}
+			// check the user not repeating the resume
+			for _, value := range userResumeInfo {
+				if value.UserId == userId {
+					return errors.New("已经预约过了,请不要重复预约")
+				}
+			}
+			basicCardInfo, ok := UserCard[userId]
+			if !ok {
+				loger.Loger.Println("error: can find the card info", userId, classId)
+				return errors.New("出现错误，可以联系管理员")
+			}
+			err := db.UpdateCardIfTimesCardByUserId(userId, basicCardInfo.PurchaseId)
+			if err != nil {
+				loger.Loger.Println("error: 卡次数更新失败 userId:", userId, "error:", err.Error())
+				return err
 			}
 			userResumeInfo = append(userResumeInfo, db.UserResumeInfo{
 				UserId: userId,
@@ -112,4 +141,9 @@ func Resume(userId, classId int) (err error) {
 	}
 	loger.Loger.Println("error: cant find this class may encounter attack", classId)
 	return errors.New("找不到这个课程，请联系管理员")
+}
+func QuicklySelectMyResume(userId int) (activedClassInfo db.ActivedClassInfo, userResumeInfo []db.UserResumeInfo, err error) {
+	for i := 0; i <= 3; i++ {
+
+	}
 }

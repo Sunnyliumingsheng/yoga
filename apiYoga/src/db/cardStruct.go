@@ -69,6 +69,7 @@ type CardComplexInfo struct {
 }
 type BasicCardInfo struct {
 	CardId           int
+	PurchaseId       int
 	IsSupportGroup   bool
 	IsSupportTeam    bool
 	IsSupportVIP     bool

@@ -166,6 +166,6 @@ func (m *Message) SelectTeachingClass(userId int) {
 	m.IsSuccess = true
 	m.Result = class
 }
-func (m *Message) SelectClass(classId int) {
-
+func (m *Message) SelectMyResume(userId int) {
+	deamon.SelectMyResume(userId)
 }

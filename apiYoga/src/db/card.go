@@ -3,6 +3,8 @@ package db
 import (
 	"api/loger"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func InsertNewCard(input InputCardInfo) (err error) {
@@ -106,21 +108,22 @@ func InsertNewPurchaseCard(username string, cardId, userId int, money int, endDa
 }
 func SelectBasicCardInfo(UserCard map[int]BasicCardInfo) (err error) {
 	currency := time.Now()
-	var userIds []int
-	err = postdb.Model(&CardPurchaseRecord{}).Where("end_date>=?", currency).Pluck("user_id", &userIds).Error
+	var purchaseRecords []CardPurchaseRecord
+	err = postdb.Model(&CardPurchaseRecord{}).Where("end_date>=?", currency).Find(&purchaseRecords).Error
 	if err != nil {
 		loger.Loger.Println("money!!!:在检索用户购买会员卡的列表的时候严重问题,error:", err.Error())
 		return err
 	}
-	for _, userId := range userIds {
+	for _, purchaseRecord := range purchaseRecords {
 		var cardInfo CardList
-		err = postdb.Model(&CardList{}).Where("user_id=?", userId).First(&cardInfo).Error
+		err = postdb.Model(&CardList{}).Where("user_id=?", purchaseRecord.UserId).First(&cardInfo).Error
 		if err != nil {
-			loger.Loger.Println("money!!!:", "在检索用户购买列表的时候检索失败userid:", userId, "error:", err.Error())
+			loger.Loger.Println("money!!!:", "在检索用户购买列表的时候检索失败userid:", purchaseRecord.UserId, "error:", err.Error())
 			return err
 		}
-		UserCard[userId] = BasicCardInfo{
+		UserCard[purchaseRecord.CardId] = BasicCardInfo{
 			CardId:           cardInfo.CardId,
+			PurchaseId:       purchaseRecord.PurchaseId,
 			IsSupportGroup:   cardInfo.IsSupportGroup,
 			IsSupportTeam:    cardInfo.IsSupportTeam,
 			IsSupportVIP:     cardInfo.IsSupportVIP,
@@ -161,4 +164,35 @@ func IsCourseIdInSpecialForbid(cardId int, courseId int) (isForbid bool, err err
 
 	// 如果 count 大于 0，说明记录存在
 	return count > 0, nil
+}
+func UpdateCardIfTimesCardByUserId(userId, purchaseId int) (err error) {
+	var purchaseInfo CardPurchaseRecord
+	err = postdb.Model(&CardPurchaseRecord{}).Where("purchase_id=?", purchaseId).First(&purchaseInfo).Error
+	if err != nil {
+		loger.Loger.Println("cant find the purchase record ")
+		return err
+	}
+	yes, err := isCardLimitTimes(purchaseInfo.CardId)
+	if err != nil {
+		loger.Loger.Println("cant find this card by cardId", purchaseInfo.CardId)
+		return err
+	}
+	if yes {
+		err := UpdateCardTimes(purchaseId, -1)
+		if err != nil {
+			loger.Loger.Println("error: cant update purchase record times", purchaseId)
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+func isCardLimitTimes(cardId int) (yes bool, err error) {
+	var cardInfo CardList
+	err = postdb.Model(&CardList{}).Where("card_id=?", cardId).First(&cardInfo).Error
+	return cardInfo.IsLimitTimes, err
+}
+func UpdateCardTimes(purchaseId int, change int) (err error) {
+	err = postdb.Model(&CardPurchaseRecord{}).Where("purchase_id=?", purchaseId).Update("times", gorm.Expr("times + ?", change)).Error
+	return err
 }

@@ -1,5 +1,7 @@
 package db
 
+import "time"
+
 func InsertNewClass(classList ClassList) (classId int, err error) {
 	err = postdb.Model(&ClassList{}).Create(&classList).Error
 	return classId, err
@@ -46,4 +48,29 @@ func SelectTeachClassThisWeekday(teacherId, weekday int) (class []ClassList, err
 		return nil, err
 	}
 	return class, nil
+}
+func InsertClassRecord(classId int, classInfo ClassActived) (classRecordId int, err error) {
+	var class ClassRecord
+	class = ClassRecord{
+		ClassId:       classId,
+		EndTime:       time.Now(),
+		ShouldCheckin: classInfo.ResumeNum,
+		ReallyCheckin: classInfo.CheckinNum,
+		RecordText:    classInfo.RecordText,
+	}
+	err = postdb.Model(&ClassRecord{}).Create(&class).Error
+	return class.ClassRecordId, err
+}
+func InsertCheckinRecord(classRecordId int, resumeInfos []UserResumeInfo) (err error) {
+	var checkInRecords []CheckinRecord = make([]CheckinRecord, 20)
+	for index, resumeInfo := range resumeInfos {
+		checkInRecords[index] = CheckinRecord{
+			ClassRecordId: classRecordId,
+			UserId:        resumeInfo.UserId,
+			Status:        resumeInfo.Status,
+			CheckinAt:     resumeInfo.CheckinAt,
+		}
+	}
+	err = postdb.Model(&CheckinRecord{}).Create(checkInRecords).Error
+	return err
 }
