@@ -36,5 +36,8 @@
         "courseSubject":"普通瑜伽",
         "introductionURL":"https://img.fine400.com/temp/new04.jpg",
         "introduction":"很棒"
+    },
+    "rules":{
+        "blackListTime":14
     }
 }

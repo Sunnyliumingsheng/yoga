@@ -15,6 +15,7 @@ type AuthenticationInfo struct {
 	Token   string `json:"token"`
 }
 
+// 唉，解藕的好处啊
 // 如果你想修改超级用户的登录逻辑,请修改这里,修改之前,请确定你已经看了config/types.go
 func authenticateSudo(s SudoAuthentication) bool {
 	return s.SudoName == config.Config.Sudo.SuperUsername && s.SudoPassword == config.Config.Sudo.SuperPassword

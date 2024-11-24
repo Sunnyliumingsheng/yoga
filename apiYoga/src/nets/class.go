@@ -2,6 +2,7 @@ package nets
 
 import (
 	"api/db"
+	"api/deamon"
 	"api/service"
 
 	"github.com/gin-gonic/gin"
@@ -197,9 +198,18 @@ func resume(c *gin.Context) {
 	}
 	var m service.Message
 	m.Resume(getData.ClassId, sessionInfo.UserId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	if !m.IsSuccess {
+		c.JSON(400, gin.H{"message": m.Info})
+		return
+	}
+	c.JSON(200, gin.H{"message": m.Info})
 }
 
-// select in postgres
+// select in postgres ,teacher use in wx
 func selectTeachingClass(c *gin.Context) {
 	type selectInfo struct {
 		AuthenticationInfo AuthenticationInfo `json:"authentication"`
@@ -232,7 +242,30 @@ func selectTeachingClass(c *gin.Context) {
 
 // student can do this
 func cancelResume(c *gin.Context) {
-
+	type cancelInfo struct {
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+		ClassId            int                `json:"classId"`
+	}
+	var getData cancelInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	var m service.Message
+	m.CancelResume(sessionInfo.UserId, getData.ClassId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	if !m.IsSuccess {
+		c.JSON(400, gin.H{"message": m.Info})
+		return
+	}
+	c.JSON(200, gin.H{"message": m.Info})
 }
 
 // student can do this
@@ -255,37 +288,150 @@ func selectMyResume(c *gin.Context) {
 	}
 	var m service.Message
 	m.SelectMyResume(sessionInfo.UserId)
+	c.JSON(200, m.Result)
 }
 
 // change a user checkin status , teacher can do this
-func changeCheckinStatusUser(c *gin.Context) {
-
+func updateTeacherInfoCheckinStatusByUserId(c *gin.Context) {
+	type checkinInfo struct {
+		UserId             int                `json:"user_id"`
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+		CheckinStatus      int                `json:"checkin_status"`
+		ClassId            int                `json:"class_id"`
+	}
+	var getData checkinInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level > 2 {
+		c.JSON(400, gin.H{"error": "没有权限"})
+		return
+	}
+	var m service.Message
+	m.ChangeCheckinStatusUser(getData.UserId, getData.CheckinStatus, getData.ClassId)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+	}
+	c.JSON(200, gin.H{"message": "success"})
 }
 
 // checkin all user , cause it is usually to use
-func checkinAllUser(c *gin.Context) {
-
+func checkinAllStudent(c *gin.Context) {
+	type checkinInfo struct {
+		ClassId            int                `json:"class_id"`
+		AuthenticationInfo AuthenticationInfo `json:"authenticationInfo"`
+		Text               string             `json:"text"`
+	}
+	var getData checkinInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	sessionInfo, err := authentication(getData.AuthenticationInfo, c)
+	if err != nil {
+		return
+	}
+	if sessionInfo.Level > 2 {
+		c.JSON(400, gin.H{"error": "没有权限"})
+	}
+	var m service.Message
+	m.CheckinAllStudent(sessionInfo.UserId, getData.ClassId, getData.Text)
+	returnMdotInfo(m, c)
 }
 
 // select all record ,everyone can do this
 func selectRecord(c *gin.Context) {
-
+	type recordLength struct {
+		Tail int `json:"tail"`
+	}
+	var getData recordLength
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	var m service.Message
+	m.SelectRecord(getData.Tail)
+	if m.HaveError {
+		c.JSON(400, gin.H{"error": m.Info})
+		return
+	}
+	c.JSON(200, m.Result)
 }
 
-// electron can do this ,select the black list
-func selectBlackList(c *gin.Context) {
-
+// cli can do this ,select the black list
+func selectBlackListByUserId(c *gin.Context) {
+	type selectInfo struct {
+		UserId             int                `json:"user_id"`
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+	}
+	var getData selectInfo
+	isOK := authenticateSudo(getData.SudoAuthentication)
+	if !isOK {
+		c.JSON(400, gin.H{"error": "验证失败"})
+		return
+	}
+	yes, err := db.IsSomeoneInBlackList(getData.UserId)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"is_in_black_list": yes})
 }
 
+// 附赠的说明，这里很简陋
 // remove someone out of blask list ,only sudo can do this
-func deleteUserBlackList(c *gin.Context) {
-
+func deleteAllBlackList(c *gin.Context) {
+	type authInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+	}
+	var getData authInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	isOK := authenticateSudo(getData.SudoAuthentication)
+	if !isOK {
+		c.JSON(400, gin.H{"error": "验证失败"})
+		return
+	}
+	err := db.DeleteAllBlackList()
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"message": "success"})
+}
+func SelectBlackList(c *gin.Context) {
+	type authInfo struct {
+		SudoAuthentication SudoAuthentication `json:"sudoAuthentication"`
+	}
+	var getData authInfo
+	if err := c.ShouldBindJSON(&getData); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	isOK := authenticateSudo(getData.SudoAuthentication)
+	if !isOK {
+		c.JSON(400, gin.H{"error": "验证失败"})
+		return
+	}
+	list, err := db.SelectBlackList()
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"list": list})
 }
 
 // if you want to shutdown -r but still storage the ram,you can sudo this and quickly reboot
 func storageRam(c *gin.Context) {
-
+	deamon.Storage()
 }
 func getStorageRam(c *gin.Context) {
-
+	deamon.GetStorage()
 }

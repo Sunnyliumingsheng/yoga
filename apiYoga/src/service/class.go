@@ -167,5 +167,59 @@ func (m *Message) SelectTeachingClass(userId int) {
 	m.Result = class
 }
 func (m *Message) SelectMyResume(userId int) {
-	deamon.SelectMyResume(userId)
+	resumeInfo := deamon.QuicklySelectMyResume(userId)
+	m.Result = resumeInfo
+}
+func (m *Message) CancelResume(userId, classId int) {
+	isok, err := deamon.QuicklyCancelResume(userId, classId)
+	if !isok {
+		m.HaveError = false
+		m.IsSuccess = false
+		m.Info = "今天的课程无法取消"
+		return
+	}
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Info = "取消预约成功"
+}
+func (m *Message) CheckinAllStudent(userId, classId int, text string) {
+	err := deamon.CheckinAllStudent(userId, classId, text)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Info = "签到成功"
+}
+func (m *Message) ChangeCheckinStatusUser(userId, status, classId int) {
+	err := deamon.ChangeCheckinStatusUser(userId, status, classId)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+}
+func (m *Message) SelectRecord(tail int) {
+	records, err := db.SelectRecord(tail)
+	if err != nil {
+		m.HaveError = true
+		m.IsSuccess = false
+		m.Info = err.Error()
+		return
+	}
+	m.HaveError = false
+	m.IsSuccess = true
+	m.Result = records
 }

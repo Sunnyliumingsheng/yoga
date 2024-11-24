@@ -4,12 +4,24 @@ import (
 	"api/db"
 	"api/loger"
 	"errors"
+	"fmt"
 	"time"
 )
 
 var ccb [4]db.OneDayClass
 var nowWeekDay int
 var pmap int
+
+// used to debug,print the ccb information now
+func Print() {
+	for _, oneCcb := range ccb {
+		fmt.Println("--------------------------")
+		fmt.Println(oneCcb.ClassActivedBlock)
+		fmt.Println("-----")
+		fmt.Println(oneCcb.ClassActivedBlock)
+		fmt.Println("--------------------------")
+	}
+}
 
 // when program start to do,init the data structure
 func InitActivedClass() {
@@ -35,8 +47,8 @@ func InitActivedClass() {
 			userResumeInfo[class.ClassId] = make([]db.UserResumeInfo, 0, class.Max)
 		}
 		ccb[i] = db.OneDayClass{
-			ClassActived:   classActived,
-			UserResumeInfo: userResumeInfo,
+			ClassActivedBlock:   classActived,
+			UserResumeInfoBlock: userResumeInfo,
 		}
 	}
 	pmap = 0
@@ -45,20 +57,26 @@ func InitActivedClass() {
 // renew the data structure,every night todo
 func RenewActivedClass() {
 	// firstly record the resume information
-	for classId, classInfo := range ccb[pmap].ClassActived {
+	for classId, classInfo := range ccb[pmap].ClassActivedBlock {
 		recordId, err := db.InsertClassRecord(classId, classInfo)
 		if err != nil {
 			loger.Loger.Println("error: insert class record failed", err.Error())
 			return
 		}
-		err = db.InsertCheckinRecord(recordId, ccb[pmap].UserResumeInfo[classId])
+		err = db.InsertCheckinRecord(recordId, ccb[pmap].UserResumeInfoBlock[classId])
 		if err != nil {
 			loger.Loger.Println("error : insert checkin record failed", err.Error())
 			return
 		}
 	}
 	// then delete the old map
+	err := db.RecordClassAndCheckinInfo(ccb[pmap])
+	if err != nil {
+		loger.Loger.Println("error : when record this day ", err)
+		return
+	}
 	ccb[pmap] = db.OneDayClass{}
+	// and insert the new class
 	nowWeekDay = ((nowWeekDay + 1) % 7)
 	newActivedClassList, err := db.SelectActivedClassThisWeekday(nowWeekDay)
 	if err != nil {
@@ -66,23 +84,24 @@ func RenewActivedClass() {
 		return
 	}
 	for _, class := range newActivedClassList {
-		ccb[pmap].ClassActived[class.ClassId] = db.ClassActived{
+		ccb[pmap].ClassActivedBlock[class.ClassId] = db.ClassActived{
 			CourseId:   class.CourseId,
 			Index:      class.Index,
 			ResumeNum:  0,
 			CheckinNum: 0,
 			TeacherId:  class.TeacherId,
 			Max:        class.Max,
+			WeekDay:    class.DayOfWeek,
 			RecordText: "",
 		}
-		ccb[pmap].UserResumeInfo[class.ClassId] = make([]db.UserResumeInfo, 0, class.Max)
+		ccb[pmap].UserResumeInfoBlock[class.ClassId] = make([]db.UserResumeInfo, 0, class.Max)
 	}
 	pmap = (pmap + 1) % 4
 }
 
 func QuicklySelectClass() (fourDayClass [4][]db.ActivedClassInfo, err error) {
 	for i := 0; i <= 3; i++ {
-		for classId, classActived := range ccb[i].ClassActived {
+		for classId, classActived := range ccb[i].ClassActivedBlock {
 			fourDayClass[i] = append(fourDayClass[i], db.ActivedClassInfo{
 				ClassId:      classId,
 				ClassActived: classActived,
@@ -96,8 +115,8 @@ func QuicklySelectClass() (fourDayClass [4][]db.ActivedClassInfo, err error) {
 func QuicklySelectClassByClassId(classId int) (db.ClassActived, []db.UserResumeInfo, error) {
 	for i := 0; i <= 3; i++ {
 		// 很典型的奇技淫巧，很容易出错，切勿模仿
-		if classActived, ok := ccb[i].ClassActived[classId]; ok {
-			return classActived, ccb[i].UserResumeInfo[classId], nil
+		if classActived, ok := ccb[i].ClassActivedBlock[classId]; ok {
+			return classActived, ccb[i].UserResumeInfoBlock[classId], nil
 		}
 	}
 	return db.ClassActived{}, nil, errors.New("找不到这个课程")
@@ -107,10 +126,10 @@ func QuicklySelectClassByClassId(classId int) (db.ClassActived, []db.UserResumeI
 func Resume(userId, classId int) (err error) {
 	// find the class in this 4 day
 	for i := 0; i <= 3; i++ {
-		classActived, ok := ccb[i].ClassActived[classId]
+		classActived, ok := ccb[i].ClassActivedBlock[classId]
 		if ok { //if i find the class
 			// select the resume info
-			userResumeInfo, ok := ccb[i].UserResumeInfo[classId]
+			userResumeInfo, ok := ccb[i].UserResumeInfoBlock[classId]
 			if !ok {
 				loger.Loger.Println("error: can find the class info but not the resume info", classId, userId)
 				return errors.New("出现错误，通知管理员")
@@ -142,8 +161,109 @@ func Resume(userId, classId int) (err error) {
 	loger.Loger.Println("error: cant find this class may encounter attack", classId)
 	return errors.New("找不到这个课程，请联系管理员")
 }
-func QuicklySelectMyResume(userId int) (activedClassInfo db.ActivedClassInfo, userResumeInfo []db.UserResumeInfo, err error) {
-	for i := 0; i <= 3; i++ {
 
+// select my resume
+func QuicklySelectMyResume(userId int) (resumeInfo db.OneDayClass) {
+	MyResumeClassId := make([]int, 0, 8)
+	for i := 0; i <= 3; i++ {
+		for classId, ResumeInfo := range ccb[i].UserResumeInfoBlock {
+			for _, value := range ResumeInfo {
+				// find all classId that this userId resumed
+				if value.UserId == userId {
+					MyResumeClassId = append(MyResumeClassId, classId)
+				}
+			}
+		}
+		for _, classId := range MyResumeClassId {
+			resumeInfo.ClassActivedBlock[classId] = ccb[i].ClassActivedBlock[classId]
+			resumeInfo.UserResumeInfoBlock[classId] = ccb[i].UserResumeInfoBlock[classId]
+		}
 	}
+	return resumeInfo
+}
+
+func QuicklyCancelResume(userId, classId int) (isok bool, err error) {
+	weekday, resumeInfo, err := lockResumeInfoByClassIdAndUserId(classId, userId)
+	if nowWeekDay == weekday {
+
+		return false, nil
+	}
+	resumeInfo.Status = 3
+	return true, err
+}
+
+// this function may error ,because it too relay human brain,return weekday and the pointer of resume struct
+func lockResumeInfoByClassIdAndUserId(classId, userId int) (int, *db.UserResumeInfo, error) {
+	for i := 0; i <= 3; i++ {
+		resumeInfoBlock, ok := ccb[i].UserResumeInfoBlock[classId]
+		if !ok { // cant find this class
+			continue
+		}
+		// can find this class and range this resume block
+		for _, resumeInfo := range resumeInfoBlock {
+			if resumeInfo.UserId == userId {
+				return ccb[i].ClassActivedBlock[classId].WeekDay, &resumeInfo, nil
+			}
+		}
+		loger.Loger.Println("找不到预约记录", userId)
+		return -1, nil, errors.New("找不到预约记录")
+	}
+	loger.Loger.Println("找不到这个班级", classId)
+	return -1, nil, errors.New("找不到这个班级")
+}
+
+// thi function lock the classId
+func lockResumeInfoByClassId(classId int) (i int, err error) {
+	for i = 0; i <= 3; i++ {
+		_, ok := ccb[i].UserResumeInfoBlock[classId]
+		if !ok { // cant find this class
+			continue
+		}
+		// find this class
+		return i, nil
+	}
+	return -1, errors.New("cant find the class")
+}
+func StorageClass() {
+	Print()
+	db.StorageClassRam(db.StorageStruct{
+		Ccb:        ccb,
+		NowWeekDay: nowWeekDay,
+		Pmap:       pmap,
+	})
+}
+func GetStorageClass() {
+	storage := db.GetSTorageClassRam()
+	ccb = storage.Ccb
+	nowWeekDay = storage.NowWeekDay
+	pmap = storage.Pmap
+	Print()
+}
+func CheckinAllStudent(userId, classId int, text string) (err error) {
+	p, err := lockResumeInfoByClassId(classId)
+	if err != nil {
+		return err
+	}
+	classInfo, ok := ccb[p].ClassActivedBlock[classId]
+	if !ok {
+		return errors.New("出现问题，无法找到这节课")
+	}
+	if classInfo.TeacherId != userId {
+		return errors.New("你不是这门课程的老师")
+	}
+	classInfo.RecordText = text
+	for _, resumeInfo := range ccb[p].UserResumeInfoBlock[classId] {
+		resumeInfo.Status = 1
+		resumeInfo.CheckinAt = time.Now()
+	}
+	return nil
+}
+func ChangeCheckinStatusUser(userId, status, classId int) (err error) {
+	_, resume, err := lockResumeInfoByClassIdAndUserId(classId, userId)
+	if err != nil {
+		return err
+	}
+	resume.Status = status
+	// you cant return err ,because may change status
+	return nil
 }

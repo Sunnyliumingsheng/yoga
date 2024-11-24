@@ -47,4 +47,24 @@ func basicalApiEngine(r *gin.Engine) {
 	// 管理员和老师使用的有关课程的
 	r.POST("/api/admin/insert/class", insertNewClass)
 	r.POST("/api/admin/delete/class", deleteClass)
+	r.POST("/api/admin/active/class", activeClass)
+	r.POST("/api/admin/select/all/class", selectAllClass)
+	//
+	r.POST("/api/select/all/actived/class", selectAllActivedClass)
+	r.POST("/api/select/actived/class", selectActivedClass)
+	r.POST("/api/select/class/by/classId", selectClassByClassId)
+	//
+	r.POST("/api/resume", resume)
+	r.POST("/api/select/teaching/class", selectTeachingClass)
+	r.POST("/api/cancel/resume", cancelResume)
+	r.POST("/api/select/my/resume", selectMyResume)
+	r.POST("/api/update/checkin/Status/by/userId", updateTeacherInfoCheckinStatusByUserId)
+	r.POST("/api/select/record", selectRecord)
+	//
+	r.POST("/api/admin/select/black/list/by/userId", selectBlackListByUserId)
+	r.POST("/api/admin/delete/all/black/list", deleteAllBlackList)
+	r.POST("/api/admin/select/black/list", SelectBlackList)
+	// thanks the nginx ,no one can access this api,without I testing
+	r.POST("/test/storage/ram")
+	r.POST("/test/get/storage/ram")
 }

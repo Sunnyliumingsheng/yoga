@@ -21,6 +21,10 @@ type ClassRecord struct {
 	EndTime       time.Time
 	ShouldCheckin int
 	ReallyCheckin int
+	Index         int
+	CourseId      int
+	TeacherId     int
+	WeekDay       int
 	RecordText    string
 }
 
@@ -38,10 +42,11 @@ type Blacklist struct {
 	EndAt  time.Time
 }
 
-// this struct is used to response the request
-type ActivedClassInfo struct {
-	ClassId      int
-	ClassActived ClassActived
+type StorageStruct struct {
+	ID         int `gorm:"primaryKey"`
+	Ccb        [4]OneDayClass
+	NowWeekDay int
+	Pmap       int
 }
 
 // 这几个存在于内存中，每天凌晨和重启的时候才会用到
@@ -52,6 +57,7 @@ type ClassActived struct {
 	CheckinNum int
 	TeacherId  int
 	Max        int
+	WeekDay    int
 	RecordText string
 }
 type UserResumeInfo struct {
@@ -60,11 +66,13 @@ type UserResumeInfo struct {
 	CheckinAt time.Time
 }
 type OneDayClass struct {
-	ClassActived   map[int]ClassActived
-	UserResumeInfo map[int][]UserResumeInfo
+	// the int is the classId
+	ClassActivedBlock   map[int]ClassActived
+	UserResumeInfoBlock map[int][]UserResumeInfo
 }
-type StorageStruct struct {
-	ccb        [4]OneDayClass
-	nowWeekDay int
-	pmap       int
+
+// this struct is used to response the request
+type ActivedClassInfo struct {
+	ClassId      int
+	ClassActived ClassActived
 }

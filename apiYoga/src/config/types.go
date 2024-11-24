@@ -11,6 +11,7 @@ type ConfigJSON struct {
 	NewUserDefaultInfo   NewUserDefaultInfo   `json:"newUserDefaultInfo"`   //新注册用户的默认信息
 	NewCourseDefaultInfo NewCourseDefaultInfo `json:"newCourseDefaultInfo"` //
 	Sudo                 sudo                 `json:"sudo"`                 //超级管理员的一些信息
+	Rules                Rules                `json:"rules"`                //一些规则，取决于你
 }
 
 //以下是json中的嵌套结构体
@@ -56,4 +57,7 @@ type NewCourseDefaultInfo struct {
 type sudo struct {
 	SuperUsername string `json:"superUsername"`
 	SuperPassword string `json:"superPassword"`
+}
+type Rules struct {
+	BlackListTime int `json:"blackListTime"`
 }

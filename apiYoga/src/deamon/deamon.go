@@ -35,3 +35,9 @@ func nightFlash() {
 		nightToDo()
 	}
 }
+func Storage() {
+	StorageClass()
+}
+func GetStorage() {
+	GetStorageClass()
+}
